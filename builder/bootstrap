@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+arch="$1"
+version="$2"
+repo="$3"
+keyring="$(realpath "$4")"
+output="$5"
+
+chroot_dir="$(mktemp -d)"
+mount -t tmpfs tmpfs "$chroot_dir"
+chmod 755 "$chroot_dir"
+container=lxc debootstrap --keyring "$keyring" --arch "$arch" --variant minbase "$version" "$chroot_dir" "$repo" bookworm || (cat "$chroot_dir/debootstrap/debootstrap.log"; false)
+
+cp "$keyring" "$chroot_dir/etc/apt/trusted.gpg.d/keyring.gpg"
+echo "deb $repo $version main" > "$chroot_dir/etc/apt/sources.list"
+
+find "$chroot_dir/proc" "$chroot_dir/sys" "$chroot_dir/dev" "$chroot_dir/run" "$chroot_dir/tmp" -mindepth 1 -delete
+tar --create --sort name --xattrs --xattrs-include 'security.*' --numeric-owner --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --transform 's|^\./||' --directory "$chroot_dir" . > "$output"
+
+umount "$chroot_dir"
+rmdir "$chroot_dir"

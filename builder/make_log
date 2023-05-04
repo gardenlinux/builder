@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+target="$1"
+shift
+
+echo -n | cat "${@/%/.log}" > "$target.log"
+
+while IFS= read -r line; do
+	date="$(date -u '+%Y-%m-%d %H:%M:%S')"
+	printf '[%s %s] %s\n' "$target" "$date" "$line"
+	printf '[%s] %s\n' "$date" "$line" >> "$target.log"
+done

@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+input="$1"
+native_bin="$2"
+output="$3"
+
+IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
+
+chroot_dir="$(mktemp -d)"
+mount -t tmpfs tmpfs "$chroot_dir"
+chmod 755 "$chroot_dir"
+chcon system_u:object_r:unlabeled_t:s0 "$chroot_dir"
+
+tar --extract --xattrs --xattrs-include 'security.*' --directory "$chroot_dir" < "$input"
+tar --extract --xattrs --xattrs-include 'security.*' --directory "$chroot_dir" < "$native_bin"
+
+mount --rbind --make-rprivate /proc "$chroot_dir/proc"
+mount --rbind --make-rprivate /sys "$chroot_dir/sys"
+mount --rbind --make-rprivate /dev "$chroot_dir/dev"
+
+mkdir "$chroot_dir/builder"
+mount --rbind --make-rprivate /builder "$chroot_dir/builder"
+PATH="/native_bin:$PATH" chroot "$chroot_dir" /builder/configure.chroot
+umount -l "$chroot_dir/builder"
+rmdir "$chroot_dir/builder"
+
+for feature in "${features[@]}"; do
+	if [ -e "/builder/features/$feature/exec.post" ]; then
+		printf 'exec: %s\n' "/builder/features/$feature/exec.post"
+		"/builder/features/$feature/exec.post" "$chroot_dir" 2>&1 | sed 's/^/  /'
+	fi
+done
+
+rm -rf "$chroot_dir/native_bin"
+
+umount -l "$chroot_dir/proc"
+umount -l "$chroot_dir/sys"
+umount -l "$chroot_dir/dev"
+
+find "$chroot_dir/proc" "$chroot_dir/sys" "$chroot_dir/dev" "$chroot_dir/run" "$chroot_dir/tmp" -mindepth 1 -delete
+tar --create --mtime="@$BUILDER_TIMESTAMP" --sort name --xattrs --xattrs-include 'security.*' --numeric-owner --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --transform 's|^\./||' --directory "$chroot_dir" . > "$output"
+
+umount "$chroot_dir"
+rmdir "$chroot_dir"

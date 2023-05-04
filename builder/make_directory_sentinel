@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+exec 3>&1
+exec 1>&2
+
+dir="$1"
+dir_escaped="$(echo "$dir" | sed 's|/|-|')"
+
+timestamp="$(find "$dir" -printf '%T@\n' | sort | tail -n 1)"
+file=".build/$dir_escaped.sentinel"
+touch -d "@$timestamp" "$file"
+
+echo "$file" >&3

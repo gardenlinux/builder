@@ -1,0 +1,41 @@
+exec 3>&1
+exec 4>&2
+export -n BASH_ENV
+
+make_log_pipe=
+make_log_pid=
+
+function open_target_log {
+	make_log_pipe="$(mktemp -u)"
+	mkfifo "$make_log_pipe"
+	./make_log "$@" < "$make_log_pipe" >&3 &
+	make_log_pid="$!"
+	exec 1> "$make_log_pipe"
+	exec 2>&1
+}
+
+function close_target_log {
+	if [ -n "$make_log_pid" ]; then
+		exec 2>&4
+		exec 1>&3
+		wait "$make_log_pid"
+		make_log_pid=
+		rm "$make_log_pipe"
+		make_log_pipe=
+		end_time="$(date '+%s')"
+		time_diff="$(( end_time - start_time ))"
+		printf 'completed in %s seconds\n\n' "$time_diff"
+	fi
+}
+
+function target {
+	start_time="$(date '+%s')"
+	close_target_log
+	open_target_log "$@"
+}
+
+function info {
+	echo "$@" >&3
+}
+
+trap close_target_log EXIT

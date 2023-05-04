@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+input="$1"
+output="$2"
+
+IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
+
+fstab="$(mktemp)"
+
+for feature in "${features[@]}"; do
+	file="/builder/features/$feature/fstab"
+	if [ -e "$file" ]; then
+		[ ! -s "$fstab" ] || echo "warning: multiple fstabs, overwriting (consider using fstab.mod instead)"
+		printf 'using base fstab: %s\n' "$file"
+		sed 's/#.*$//;/^[[:space:]]*$/d' "$file" > "$fstab"
+	fi
+done
+
+fstab_tmp="$(mktemp)"
+for feature in "${features[@]}"; do
+	file="/builder/features/$feature/fstab.mod"
+	if [ -e "$file" ]; then
+		printf 'modifying fstab with %s\n' "$file"
+		"$file" < "$fstab" > "$fstab_tmp"
+		sed 's/#.*$//;/^[[:space:]]*$/d' "$fstab_tmp" > "$fstab"
+	fi
+done
+rm "$fstab_tmp"
+
+echo "---- fstab ----"
+cat "$fstab"
+echo "---------------"
+
+image="$(mktemp -u)"
+chroot_dir="$(mktemp -d)"
+mount -t tmpfs tmpfs "$chroot_dir"
+tar --extract --xattrs --xattrs-include '*' --directory "$chroot_dir" < "$input"
+
+(export PATH="/builder/image.d:$PATH"; makepart "$chroot_dir" < "$fstab" | makedisk "$chroot_dir" "$image")
+
+umount "$chroot_dir"
+rmdir "$chroot_dir"
+
+cp --sparse always "$image" "$output"
+rm "$image"

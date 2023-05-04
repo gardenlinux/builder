@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+shopt -s nullglob
+
+extensions=(raw)
+
+for feature in "features/"*; do
+	for i in "$feature/"{image,convert}.*; do
+		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_]*)*$' <<< "$i")"
+		extensions+=("${extension:1}")
+	done
+done
+
+echo "${extensions[@]}"

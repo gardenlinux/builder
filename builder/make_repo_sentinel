@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+exec 3>&1
+exec 1>&2
+
+repo="$1"
+version="$2"
+repo_escaped="$(echo "$repo" | sed 's|https*://||;s|/|-|')"
+file=".build/$repo_escaped-$version.sentinel"
+
+old_release="$([ ! -e "$file" ] || cat "$file")"
+new_release="$(curl -s "$repo/dists/$version/InRelease" | sha256sum | head -c 64)"
+
+[ "$old_release" = "$new_release" ] || echo -n "$new_release" > "$file"
+
+echo "$file" >&3

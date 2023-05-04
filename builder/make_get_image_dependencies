@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+exec 3>&1
+exec 1>&1
+
+# get longest chain of extensions, but not extensions starting with a number to prevent parsing minor version as extension
+extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_]*)*$' <<< "$1")"
+artifact_base="${1%"-$COMMIT$extension"}"
+cname="$(basename "$artifact_base")"
+
+[ "$extension" != ".raw" ] || extension=
+
+is_feature_script=0
+script=
+input=
+
+if [ -f "image$extension" ]; then
+	script="image$extension"
+	input="$artifact_base-$COMMIT.tar"
+fi
+
+if [ -f "convert$extension" ]; then
+	script="convert$extension"
+	input="$artifact_base-$COMMIT.raw"
+fi
+
+IFS=',' read -r -a features < <(./parse_features --feature-dir features --cname "$cname" features)
+
+for feature in "${features[@]}"; do
+	if [ -s "features/$feature/image$extension" ]; then
+		if [ "$is_feature_script" = 1 ]; then
+			printf "error: %s conflicts with %s\n" "$script" "features/$feature/image$extension"
+			exit 1
+		fi
+		is_feature_script=1
+		script="features/$feature/image$extension"
+		input="$artifact_base-$COMMIT.tar"
+	fi
+
+	if [ -s "features/$feature/convert$extension" ]; then
+		if [ "$is_feature_script" = 1 ]; then
+			printf "error: %s conflicts with %s\n" "$script" "features/$feature/convert$extension"
+			exit 1
+		fi
+		is_feature_script=1
+		script="features/$feature/convert$extension"
+		input="$artifact_base-$COMMIT.raw"
+	fi
+done
+
+if [ -z "$script" ]; then
+	printf 'no image or convert script found to build %s\n' "${extension#.}"
+	exit 1
+fi
+
+printf '%s %s\n' "$script" "$input" >&3
