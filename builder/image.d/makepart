@@ -152,7 +152,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 			mount --bind "$file" "$rootfs$file"
 			mount --rbind --make-rprivate /proc "$rootfs/proc"
 			#shellcheck disable=SC2046
-			chroot "$rootfs" make_reproducible_ext4 -t "$BUILDER_TIMESTAMP" -h "gardenlinux:$BUILDER_VERSION:partition:$target" ${uuid:+"-u"} ${uuid:+"$uuid"} ${label:+"-l"} ${label:+"$label"} -q $([ "$resize" = 0 ] || echo "-m") -p 16 "$data_source" "$file"
+			chroot "$rootfs" make_reproducible_ext4 -t "$BUILDER_TIMESTAMP" -h "gardenlinux:$BUILDER_VERSION:partition:$target" ${uuid:+"-u"} ${uuid:+"$uuid"} ${label:+"-l"} ${label:+"$label"} -q $([ "$resize" = 0 ] || echo "-m") $(grep -v x-systemd.growfs <<< "$options" &> /dev/null || echo "-j") -p 16 "$data_source" "$file"
 			umount -l "$rootfs/proc"
 			umount -R "$rootfs/tmp"
 			umount -l "$rootfs/builder"
