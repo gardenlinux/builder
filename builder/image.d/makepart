@@ -144,9 +144,9 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 			mkdir "$rootfs/builder"
 			mount --rbind --make-rprivate /builder "$rootfs/builder"
 			mount -t tmpfs -o size=2GiB none "$rootfs/tmp"
-			[ "$(dirname "$data_source")" = /tmp ]
+			[[ "$data_source" == /tmp* ]]
 			[ "$(dirname "$file")" = /tmp ]
-			mkdir "$rootfs$data_source"
+			mkdir -p "$rootfs$data_source"
 			mount --bind "$data_source" "$rootfs$data_source"
 			touch "$rootfs$file"
 			mount --bind "$file" "$rootfs$file"
