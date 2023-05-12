@@ -4,7 +4,7 @@ set -eufo pipefail
 
 if [ "${1-}" = --second-stage ]; then
 	shift
-	mount -t tmpfs -o size=8GiB none /tmp
+	mount -t tmpfs -o size=8G tmpfs /tmp
 	"$@"
 else
 	unshare --map-root-user --map-users auto --map-groups auto --mount "$0" --second-stage "$@"

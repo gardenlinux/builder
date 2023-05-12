@@ -9,7 +9,7 @@ keyring="$(realpath "$4")"
 output="$5"
 
 chroot_dir="$(mktemp -d)"
-mount -t tmpfs -o size=2GiB tmpfs "$chroot_dir"
+mount -t tmpfs -o size=2G tmpfs "$chroot_dir"
 chmod 755 "$chroot_dir"
 container=lxc debootstrap --keyring "$keyring" --arch "$arch" --variant minbase "$version" "$chroot_dir" "$repo" bookworm || (cat "$chroot_dir/debootstrap/debootstrap.log"; false)
 

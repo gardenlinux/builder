@@ -69,7 +69,7 @@ mount --rbind /dev "$rootfs/dev"
 kernel_file=$(find "$rootfs/boot/" -name 'vmlinuz-*')
 kernel_version="${kernel_file#*-}"
 
-unshare --user --map-root-user --mount -- bash -c 'mount -t tmpfs -o size=2GiB tmpfs '"$rootfs/var/tmp"' && mount -t tmpfs -o size=2GiB tmpfs /sys && mount --bind /usr/bin/false /usr/bin/systemd-detect-virt && "$@"' -- \
+unshare --user --map-root-user --mount -- bash -c 'mount -t tmpfs -o size=2G tmpfs '"$rootfs/var/tmp"' && mount -t tmpfs -o size=2G tmpfs /sys && mount --bind /usr/bin/false /usr/bin/systemd-detect-virt && "$@"' -- \
 chroot "$rootfs" env dracut \
 	--no-hostonly \
 	--force \
