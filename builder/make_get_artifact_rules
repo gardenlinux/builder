@@ -3,7 +3,7 @@
 set -euo pipefail
 shopt -s nullglob
 
-extensions=(raw)
+extensions=(release raw)
 
 for feature in "features/"*; do
 	for i in "$feature/"{image,convert}.*; do

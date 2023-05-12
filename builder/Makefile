@@ -89,8 +89,8 @@ $(foreach artifact_rule,$(shell ./make_get_artifact_rules),$(eval $(call artifac
 	done
 
 %: .build/$$(shell ./parse_features --feature-dir features --default-arch '$$(NATIVE_ARCH)' --default-version '$$(DEFAULT_VERSION)' --cname '$$*')-$(COMMIT).artifacts
-	true
+	ln -s -r '$<' '.build/$*'
 
 # prevents match anything rule from applying to Makefile and image/convert scripts
-Makefile image $(shell find features -name 'convert.*' -o -name 'image.*'):
+Makefile image image.release $(shell find features -name 'convert.*' -o -name 'image.*'):
 	true

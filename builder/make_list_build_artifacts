@@ -7,7 +7,7 @@ cname="$1"
 
 IFS=',' read -r -a features < <(./parse_features --feature-dir features --cname "$cname" features)
 
-artifacts=(".build/$cname-$COMMIT.tar")
+artifacts=(".build/$cname-$COMMIT.tar" ".build/$cname-$COMMIT.release")
 
 for feature in "${features[@]}"; do
 	for i in "features/$feature/"{image,convert}.*; do
@@ -16,7 +16,7 @@ for feature in "${features[@]}"; do
 	done
 done
 
-if [ "${#artifacts[@]}" = 1 ] && [ -n "$(./parse_features --feature-dir "features" --cname "$cname" platforms)" ]; then
+if [ "${#artifacts[@]}" = 2 ] && [ -n "$(./parse_features --feature-dir "features" --cname "$cname" platforms)" ]; then
 	artifacts+=(".build/$cname-$COMMIT.raw")
 fi
 

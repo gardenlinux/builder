@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+input="$1"
+output="$2"
+
+tar --extract --to-stdout etc/os-release < "$input" > "$output"
