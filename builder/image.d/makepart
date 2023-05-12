@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Eexufo pipefail
+set -Eeufo pipefail
 
 # redirect all output to stderr so only second pass output for makedisk gets written to stdout
 exec 3>&1
