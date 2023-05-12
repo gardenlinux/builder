@@ -38,6 +38,10 @@ while [ $# -gt 0 ]; do
 			use_kms=1
 			shift
 			;;
+		--print-container-image)
+			printf '%s\n' "$container_image"
+			exit 0
+			;;
 		*)
 			break
 			;;
