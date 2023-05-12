@@ -11,11 +11,11 @@ jobs:
           podman login -u ${{ github.actor }} -p ${{ github.token }} ghcr.io
           podman build --squash-all --arch amd64 --tag ghcr.io/${{ github.repository }}:amd64-${{ github.sha }} .
           podman push ghcr.io/${{ github.repository }}:amd64-${{ github.sha }}
-          podman build --squash-all --arch arm64 --tag ghcr.io/${{ github.repository }}:arm64-${{ github.sha }} .
-          podman push ghcr.io/${{ github.repository }}:arm64-${{ github.sha }}
+          #podman build --squash-all --arch arm64 --tag ghcr.io/${{ github.repository }}:arm64-${{ github.sha }} .
+          #podman push ghcr.io/${{ github.repository }}:arm64-${{ github.sha }}
           podman manifest create ghcr.io/${{ github.repository }}:${{ github.sha }}
           podman manifest add ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:amd64-${{ github.sha }}
-          podman manifest add ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:arm64-${{ github.sha }}
+          #podman manifest add ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:arm64-${{ github.sha }}
           podman push ghcr.io/${{ github.repository }}:${{ github.sha }}
           sed -i 's|container_image=localhost/builder|container_image=ghcr.io/${{ github.repository }}:${{ github.sha }}|' build
       - uses: actions/upload-artifact@v3
