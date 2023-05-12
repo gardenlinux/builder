@@ -16,7 +16,7 @@ for feature in "${features[@]}"; do
 	done
 done
 
-if [ "${#artifacts[@]}" = 0 ] && [ -n "$(./parse_features --feature-dir "features" --cname "$cname" platforms)" ]; then
+if [ "${#artifacts[@]}" = 1 ] && [ -n "$(./parse_features --feature-dir "features" --cname "$cname" platforms)" ]; then
 	artifacts+=(".build/$cname-$COMMIT.raw")
 fi
 
