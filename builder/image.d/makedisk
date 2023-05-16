@@ -62,5 +62,3 @@ while IFS=$'\t' read -r part_uuid type size syslinux file label; do
 	dd if="$file" of="$img" bs="$sector_size" seek="$start_sector" count="$num_sectors" conv=notrunc
 	rm "$file"
 done <<< "$second_pass"
-
-sha256sum "$img"

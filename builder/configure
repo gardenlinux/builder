@@ -44,3 +44,4 @@ tar --create --mtime="@$BUILDER_TIMESTAMP" --sort name --xattrs --xattrs-include
 
 umount "$chroot_dir"
 rmdir "$chroot_dir"
+sha256sum "$output"

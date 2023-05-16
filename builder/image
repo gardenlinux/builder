@@ -45,3 +45,4 @@ rmdir "$chroot_dir"
 
 cp --sparse always "$image" "$output"
 rm "$image"
+sha256sum "$output"
