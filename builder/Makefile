@@ -86,6 +86,7 @@ $(foreach artifact_rule,$(shell ./make_get_artifact_rules),$(eval $(call artifac
 	echo -n > '$@'
 	for f in $^; do
 		basename "$$f" | tee -a '$@'
+		echo "$$(basename "$$f").log" | tee -a '$@'
 	done
 
 %: .build/$$(shell ./parse_features --feature-dir features --default-arch '$$(NATIVE_ARCH)' --default-version '$$(DEFAULT_VERSION)' --cname '$$*')-$(COMMIT).artifacts
