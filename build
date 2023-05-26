@@ -19,6 +19,7 @@ container_mount_opts=(
 )
 
 use_kms=0
+resolve_cname=0
 
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -42,6 +43,10 @@ while [ $# -gt 0 ]; do
 			printf '%s\n' "$container_image"
 			exit 0
 			;;
+		--resolve-cname)
+			resolve_cname=1
+			shift
+			;;
 		*)
 			break
 			;;
@@ -57,6 +62,13 @@ repo="$(./get_repo)"
 commit="$(./get_commit)"
 timestamp="$(./get_timestamp)"
 default_version="$(./get_version)"
+
+if [ "$resolve_cname" = 1 ]; then
+	arch="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" dpkg --print-architecture)"
+	cname="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" /builder/parse_features --feature-dir /builder/features --default-arch "$arch" --default-version "$default_version" --cname "$1")"
+	echo "$cname-$commit"
+	exit 0
+fi
 
 make_opts=(
 	REPO="$repo"
