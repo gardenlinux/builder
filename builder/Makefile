@@ -24,6 +24,8 @@ endef
 required_vars := REPO COMMIT TIMESTAMP DEFAULT_VERSION
 $(foreach var,$(required_vars),$(eval $(call require_var,$(var))))
 
+SHORT_COMMIT := $(shell head -c 8 <<< '$(COMMIT)')
+
 NATIVE_ARCH := $(shell dpkg --print-architecture)
 NATIVE_PKGS := bash dash dpkg grep mawk openssh-client policycoreutils sed tar util-linux gzip xz-utils
 
@@ -37,21 +39,21 @@ clean:
 .build/%.sentinel:
 	true
 
-.build/bootstrap-%-$(COMMIT).tar: $$(shell ./make_repo_sentinel $$(REPO) $$(call cname_version,$$*))
+.build/bootstrap-%-$(SHORT_COMMIT).tar: $$(shell ./make_repo_sentinel $$(REPO) $$(call cname_version,$$*))
 	target '$@'
-	info 'bootstrapping $*-$(COMMIT)'
+	info 'bootstrapping $*-$(SHORT_COMMIT)'
 	arch='$(call cname_arch,$*)'
 	version='$(call cname_version,$*)'
 	./bootstrap "$$arch" "$$version" '$(REPO)' keyring.gpg '$@'
 
-.build/native_bin-%-$(COMMIT).tar: .build/bootstrap-$(NATIVE_ARCH)-%-$(COMMIT).tar
+.build/native_bin-%-$(SHORT_COMMIT).tar: .build/bootstrap-$(NATIVE_ARCH)-%-$(SHORT_COMMIT).tar
 	target '$@'
 	info 'configuring native_bin'
 	./configure_nativetools '$<' '$@' $(NATIVE_PKGS)
 
-.build/%-$(COMMIT).tar: .build/bootstrap-$$(call cname_arch,$$*)-$$(call cname_version,$$*)-$(COMMIT).tar .build/native_bin-$$(call cname_version,$$*)-$(COMMIT).tar $(shell ./make_directory_sentinel features) $(shell ./make_directory_sentinel cert)
+.build/%-$(SHORT_COMMIT).tar: .build/bootstrap-$$(call cname_arch,$$*)-$$(call cname_version,$$*)-$(SHORT_COMMIT).tar .build/native_bin-$$(call cname_version,$$*)-$(SHORT_COMMIT).tar $(shell ./make_directory_sentinel features) $(shell ./make_directory_sentinel cert)
 	target '$@' '$<'
-	info 'configuring rootfs $*-$(COMMIT)'
+	info 'configuring rootfs $*-$(SHORT_COMMIT)'
 	features="$$(./parse_features --feature-dir features --cname '$*' features)"
 	BUILDER_CNAME='$*'
 	BUILDER_VERSION='$(call cname_version,$*)'
@@ -63,7 +65,7 @@ clean:
 	./configure '$(word 1,$^)' '$(word 2,$^)' '$@'
 
 define artifact_template =
-.build/%-$(COMMIT).$1: $$$$(shell COMMIT=$(COMMIT) ./make_get_image_dependencies '$$$$@') $$(shell ./make_directory_sentinel features) $$(shell ./make_directory_sentinel cert)
+.build/%-$(SHORT_COMMIT).$1: $$$$(shell COMMIT=$(SHORT_COMMIT) ./make_get_image_dependencies '$$$$@') $$(shell ./make_directory_sentinel features) $$(shell ./make_directory_sentinel cert)
 	script='$$(word 1,$$^)'
 	input='$$(word 2,$$^)'
 	target '$$@' "$$$$input"
@@ -81,7 +83,7 @@ endef
 
 $(foreach artifact_rule,$(shell ./make_get_artifact_rules),$(eval $(call artifact_template,$(artifact_rule))))
 
-.build/%-$(COMMIT).artifacts: $$(shell COMMIT=$(COMMIT) ./make_list_build_artifacts '$$*')
+.build/%-$(SHORT_COMMIT).artifacts: $$(shell COMMIT=$(SHORT_COMMIT) ./make_list_build_artifacts '$$*')
 	target '$@'
 	echo -n > '$@'
 	for f in $^; do
@@ -89,7 +91,7 @@ $(foreach artifact_rule,$(shell ./make_get_artifact_rules),$(eval $(call artifac
 		echo "$$(basename "$$f").log" | tee -a '$@'
 	done
 
-%: .build/$$(shell ./parse_features --feature-dir features --default-arch '$$(NATIVE_ARCH)' --default-version '$$(DEFAULT_VERSION)' --cname '$$*')-$(COMMIT).artifacts
+%: .build/$$(shell ./parse_features --feature-dir features --default-arch '$$(NATIVE_ARCH)' --default-version '$$(DEFAULT_VERSION)' --cname '$$*')-$(SHORT_COMMIT).artifacts
 	ln -f -s -r '$<' '.build/$*'
 
 # prevents match anything rule from applying to Makefile and image/convert scripts

@@ -63,10 +63,13 @@ commit="$(./get_commit)"
 timestamp="$(./get_timestamp)"
 default_version="$(./get_version)"
 
+[ -d .build ] || mkdir .build
+
 if [ "$resolve_cname" = 1 ]; then
 	arch="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" dpkg --print-architecture)"
 	cname="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" /builder/parse_features --feature-dir /builder/features --default-arch "$arch" --default-version "$default_version" --cname "$1")"
-	echo "$cname-$commit"
+	short_commit="$(head -c 8 <<< "$commit")"
+	echo "$cname-$short_commit"
 	exit 0
 fi
 
@@ -85,7 +88,6 @@ if [ "$use_kms" = 1 ]; then
 	done
 fi
 
-[ -d .build ] || mkdir .build
 if [ -d cert ]; then
 	container_mount_opts+=(-v "$PWD/cert:/builder/cert:ro")
 fi
