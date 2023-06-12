@@ -2,6 +2,7 @@ binutils-aarch64-linux-gnu
 binutils-x86-64-linux-gnu
 bsdextrautils
 ca-certificates
+cpio
 cryptsetup
 curl
 datefudge
@@ -22,3 +23,4 @@ sbsigntool
 squashfs-tools
 systemd
 uidmap
+xz-utils
