@@ -12,6 +12,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-rec
 COPY --from=aws-kms-pkcs11 /aws_kms_pkcs11.so /aws_kms_pkcs11.so
 RUN mv /aws_kms_pkcs11.so "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
 COPY builder /builder
+RUN mkdir /builder/cert
 COPY setup_namespace /usr/sbin/setup_namespace
 RUN echo 'root:0:65536' | tee /etc/subuid /etc/subgid > /dev/null
 ENTRYPOINT [ "/usr/sbin/setup_namespace" ]
