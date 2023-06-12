@@ -7,7 +7,7 @@ exec 1>&2
 
 repo="$1"
 version="$2"
-repo_escaped="$(echo "$repo" | sed 's|https*://||;s|/|-|')"
+repo_escaped="$(echo "$repo" | sed 's|https*://||;s|/|-|g')"
 file=".build/$repo_escaped-$version.sentinel"
 
 old_release="$([ ! -e "$file" ] || cat "$file")"
