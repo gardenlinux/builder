@@ -22,3 +22,21 @@ jobs:
         with:
           name: build
           path: build
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: tag latest
+        run: |
+          git tag --force latest
+          git push --force origin latest
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: download
+      - name: create release
+        run: |
+          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest Builder)"
+          .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
