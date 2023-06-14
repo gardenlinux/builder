@@ -3,6 +3,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: nkraetzschmar/workflow-telemetry-action@v1
+        with:
+          metric_frequency: 1
+          comment_on_pr: false
       - uses: actions/checkout@v3
       - name: build
         run: |
