@@ -59,6 +59,9 @@ while IFS=$'\t' read -r part_uuid type size syslinux file label; do
 	gpt_entry=$(grep -iF "uuid=$part_uuid" <<< "$gpt_dump")
 	start_sector=$(grep -oP '(?<=start=) *[0-9]+' <<< "$gpt_entry" | tr -d '[:blank:]')
 	num_sectors=$(grep -oP '(?<=size=) *[0-9]+' <<< "$gpt_entry" | tr -d '[:blank:]')
-	dd if="$file" of="$img" bs="$sector_size" seek="$start_sector" count="$num_sectors" conv=notrunc
+
+	offset=$(( sector_size * start_sector ))
+	len=$(( sector_size * num_sectors ))
+	mv_data --input "$file" --output "$img" --output-offset "$offset" --length "$len"
 	rm "$file"
 done <<< "$second_pass"

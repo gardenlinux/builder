@@ -1,3 +1,8 @@
+FROM debian:bookworm AS mv_data
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential ca-certificates git
+RUN git clone --depth=1 https://github.com/nkraetzschmar/mv_data
+RUN make -C mv_data install
+
 FROM debian:bookworm AS aws-kms-pkcs11
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential awscli ca-certificates cmake git libcurl4-openssl-dev libengine-pkcs11-openssl libjson-c-dev libssl-dev libp11-kit-dev libp11-dev zlib1g-dev
 RUN git clone --depth=1 --recurse-submodules -b 1.11.25 https://github.com/aws/aws-sdk-cpp
@@ -9,6 +14,7 @@ RUN cp "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so" /aws_kms_pkcs11
 FROM debian:bookworm
 COPY pkg.list /pkg.list
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends $(cat /pkg.list) && rm /pkg.list
+COPY --from=mv_data /usr/bin/mv_data /usr/bin/mv_data
 COPY --from=aws-kms-pkcs11 /aws_kms_pkcs11.so /aws_kms_pkcs11.so
 RUN mv /aws_kms_pkcs11.so "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
 COPY builder /builder
