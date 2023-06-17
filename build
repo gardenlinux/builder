@@ -63,10 +63,14 @@ if [ "$container_image" = localhost/builder ]; then
 	"$container_engine" build -t "$container_image" "$dir"
 fi
 
-repo="$(./get_repo)"
-commit="$(./get_commit)"
-timestamp="$(./get_timestamp)"
-default_version="$(./get_version)"
+repo=""
+commit=""
+timestamp=""
+default_version=""
+[ -e get_repo ] && repo="$(./get_repo)"
+[ -e get_commit ] && commit="$(./get_commit)"
+[ -e get_timestamp ] && timestamp="$(./get_timestamp)"
+[ -e get_version ] && default_version="$(./get_version)"
 
 [ -d $target_dir ] || mkdir $target_dir
 

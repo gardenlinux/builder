@@ -15,14 +15,18 @@ prelastword = $(word $(words $1),_ $1)
 cname_version = $(call lastword,$(subst -, ,$1))
 cname_arch = $(call prelastword,$(subst -, ,$1))
 
-define require_var =
-ifndef $1
-$$(error '$1 undefined')
+ifeq ($(REPO),)
+        override REPO := http://deb.debian.org/debian
 endif
-endef
-
-required_vars := REPO COMMIT TIMESTAMP DEFAULT_VERSION
-$(foreach var,$(required_vars),$(eval $(call require_var,$(var))))
+ifeq ($(COMMIT),)
+        override COMMIT := $(shell [ -z "$$(git status --porcelain 2> /dev/null)" ] && git rev-parse HEAD 2> /dev/null || echo local)
+endif
+ifeq ($(TIMESTAMP),)
+        override TIMESTAMP := 0
+endif
+ifeq ($(DEFAULT_VERSION),)
+        override DEFAULT_VERSION := bookworm
+endif
 
 SHORT_COMMIT := $(shell head -c 8 <<< '$(COMMIT)')
 
