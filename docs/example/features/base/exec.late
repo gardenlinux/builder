@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+mkdir -p /etc/kernel
+echo "root=LABEL=ROOT ro" > /etc/kernel/cmdline
+
+mkdir -p /boot/efi/Default
+
+kernel="$(find /boot -name 'vmlinuz-*' | sort -V | tail -n 1)"
+version="${kernel#*-}"
+
+unshare --mount bash -c 'mount -t tmpfs none /sys && mount --bind /usr/bin/false /usr/bin/systemd-detect-virt && "$@"' \
+DRACUT_COMPRESS_XZ="$(command -v xz)" dracut \
+--no-hostonly \
+--force \
+--kver "$version" \
+--modules "bash dash systemd systemd-initrd kernel-modules kernel-modules-extra terminfo udev-rules dracut-systemd base fs-lib shutdown" \
+--reproducible \
+"/boot/initrd.img-$version"
+
+kernel-install add "$version" "$kernel"
+
+sed 's/boot\/efi\///' -i /boot/efi/loader/entries/*.conf
+
+SYSTEMD_ESP_PATH=/boot/efi bootctl --no-variables install
