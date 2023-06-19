@@ -63,14 +63,22 @@ if [ "$container_image" = localhost/builder ]; then
 	"$container_engine" build -t "$container_image" "$dir"
 fi
 
-repo=""
-commit=""
-timestamp=""
-default_version=""
-[ -e get_repo ] && repo="$(./get_repo)"
-[ -e get_commit ] && commit="$(./get_commit)"
-[ -e get_timestamp ] && timestamp="$(./get_timestamp)"
-[ -e get_version ] && default_version="$(./get_version)"
+[ -e get_repo ] && repo="$(./get_repo)" || repo="http://deb.debian.org/debian"
+if [ -e get_commit ]
+then
+	commit="$(./get_commit)"
+else
+	pushd $(dirname "${BASH_SOURCE[0]}")
+	if [ -z "$(git status --porcelain 2> /dev/null)" ]
+	then
+		commit=$(git rev-parse HEAD 2> /dev/null)
+	else
+		commit="local"
+	fi
+	popd
+fi
+[ -e get_timestamp ] && timestamp="$(./get_timestamp)" || timestamp="0"
+[ -e get_version ] && default_version="$(./get_version)" || default_version="bookworm"
 
 [ -d $target_dir ] || mkdir $target_dir
 
