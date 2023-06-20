@@ -13,7 +13,7 @@ mount -t tmpfs -o size=2G tmpfs "$chroot_dir"
 chmod 755 "$chroot_dir"
 container=lxc debootstrap --keyring "$keyring" --arch "$arch" --variant minbase "$version" "$chroot_dir" "$repo" bookworm || (cat "$chroot_dir/debootstrap/debootstrap.log"; false)
 
-cp "$keyring" "$chroot_dir/etc/apt/trusted.gpg.d/keyring.gpg"
+gpg --keyring "$keyring" --no-default-keyring --export -a > "$chroot_dir/etc/apt/trusted.gpg.d/keyring.asc"
 echo "deb $repo $version main" > "$chroot_dir/etc/apt/sources.list"
 
 find "$chroot_dir/proc" "$chroot_dir/sys" "$chroot_dir/dev" "$chroot_dir/run" "$chroot_dir/tmp" -mindepth 1 -delete
