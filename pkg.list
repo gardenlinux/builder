@@ -9,6 +9,7 @@ datefudge
 debootstrap
 e2fsprogs
 fdisk
+gnupg2
 libcurl4
 libengine-pkcs11-openssl
 libjson-c5
