@@ -43,3 +43,17 @@ In addition to the above components, your configuration directory must include t
 If you're new to configuring the Builder, you can find a minimal example config directory at [gardenlinux/builder_example](https://github.com/gardenlinux/builder_example). For a more comprehensive example, refer to the main [gardenlinux](https://github.com/gardenlinux/gardenlinux) repository.
 
 Feel free to explore these examples to gain a better understanding of how to effectively structure your own config directory.
+
+
+## Local Development
+
+To test changes made to the builder locally you can simply create a symlink to the build script inside the builder directory inside a config directory. This will automatically be detected by the build script and the builder re-build iff necessary.
+
+e.g.: if you have the gardenlinux and builder repos both inside the same parent directory and you want to work on the builder you would do the following:
+
+```
+cd gardenlinux
+ln -f -s ../builder/build build
+```
+
+Now you can make your modifications inside the builder directory and running `./build ${target}` inside the gardenlinux repo will use the local builder, rebuilding the build container if necessary.
