@@ -43,15 +43,3 @@ In addition to the above components, your configuration directory must include t
 If you're new to configuring the Builder, you can find a minimal example config directory at [gardenlinux/builder_example](https://github.com/gardenlinux/builder_example). For a more comprehensive example, refer to the main [gardenlinux](https://github.com/gardenlinux/gardenlinux) repository.
 
 Feel free to explore these examples to gain a better understanding of how to effectively structure your own config directory.
-
-
-## Contribute
-
-If you like to modify the *Garden Linux Builder*, make your changes and create a new builder container by simply building the root folder with docker or podman:
-
-    sudo podman build -t localhost/builder .
-    
-    # or
-    
-    docker build -t localhost/builder .
-
