@@ -45,13 +45,15 @@ If you're new to configuring the Builder, you can find a minimal example config 
 Feel free to explore these examples to gain a better understanding of how to effectively structure your own config directory.
 
 
-## Contribute
+## Local Development
 
-If you like to modify the *Garden Linux Builder*, make your changes and create a new builder container by simply building the root folder with docker or podman:
+To test changes made to the builder locally you can simply create a symlink to the build script inside the builder directory inside a config directory. This will automatically be detected by the build script and the builder re-build iff necessary.
 
-    sudo podman build -t localhost/builder .
-    
-    # or
-    
-    docker build -t localhost/builder .
+e.g.: if you have the gardenlinux and builder repos both inside the same parent directory and you want to work on the builder you would do the following:
 
+```
+cd gardenlinux
+ln -f -s ../builder/build build
+```
+
+Now you can make your modifications inside the builder directory and running `./build ${target}` inside the gardenlinux repo will use the local builder, rebuilding the build container if necessary.
