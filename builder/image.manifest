@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+chroot_dir="$(mktemp -d)"
+mount -t tmpfs tmpfs "$chroot_dir"
+tar --extract --xattrs --xattrs-include '*' --directory "$chroot_dir" < "$1"
+
+#shellcheck disable=SC2016
+chroot "$chroot_dir" dpkg-query --show --showformat='${binary:Package} ${Version}\n' > "$2"
+
+umount "$chroot_dir"
+rmdir "$chroot_dir"
