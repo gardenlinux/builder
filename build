@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -eufo pipefail
+set -euo pipefail
+shopt -s nullglob
 
 container_image=localhost/builder
 container_engine=podman
@@ -62,10 +63,15 @@ done
 [ -d "$target_dir" ] || mkdir "$target_dir"
 
 container_mount_opts=(
-	-v "$PWD/features:/builder/features:ro"
 	-v "$PWD/keyring.gpg:/builder/keyring.gpg:ro"
 	-v "$(realpath "$target_dir"):/builder/.build"
 )
+
+for feature in features/*; do
+	if [ -d "$feature" ]; then
+		container_mount_opts+=(-v "$(realpath -- "$feature"):/builder/$feature:ro")
+	fi
+done
 
 if [ "$container_image" = localhost/builder ]; then
 	dir="$(dirname -- "$(realpath -- "${BASH_SOURCE[0]}")")"
