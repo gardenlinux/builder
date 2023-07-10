@@ -111,4 +111,4 @@ if [ -d cert ]; then
 	container_mount_opts+=(-v "$PWD/cert:/builder/cert:ro")
 fi
 
-"$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" "${container_cmd[@]}" make --no-print-directory -C /builder "${make_opts[@]}" "$@"
+"$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" ${container_cmd[@]+"${container_cmd[@]}"} make --no-print-directory -C /builder "${make_opts[@]}" "$@"
