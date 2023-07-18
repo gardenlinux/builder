@@ -26,7 +26,7 @@ By default, the Builder uses `podman` as the container engine. If you prefer usi
 
 A config directory serves as the input for the Builder and is used to create a Linux system image. It consists of the following components:
 
-- **`features` directory**: Contains sub-directories for each feature. You can create your own features by referring to the example in [gardenlinux/features/example](https://github.com/gardenlinux/gardenlinux/tree/main/features/example).
+- **`features` directory**: Contains sub-directories for each feature. You can create your own features by referring to [features.md](docs/features.md).
 
 - **`cert` directory** (optional): If you plan to use secure boot, include a `cert` directory.
 
@@ -37,6 +37,8 @@ In addition to the above components, your configuration directory must include t
 - `get_timestamp`: This script should output the timestamp to be used instead of the real system time, ensuring reproducibility of builds.
 - `get_version`: This script should output the version of the package repository to use. For example, use `bookworm` for Debian or `today` for Garden Linux.
 - `keyring.gpg`: The PGP key used to validate the package repository. For Debian, you can obtain this key from the [debian-archive-keyring](https://packages.debian.org/bookworm/debian-archive-keyring) package.
+
+For a quick start guide on setting up your own config directory with your own features checkout [getting_started.md](docs/getting_started.md).
 
 ### Example Config Directory
 
