@@ -1,19 +1,19 @@
 # Features
 
-Each feature must at least contain an `info.yaml` file
+Each feature must contain an `info.yaml` file that adheres to the following structure:
 
-The `info.yaml` file has the following structure fields:
+## `info.yaml` file structure:
 
-- `description`: (*optional*) a string explaining what this feature does / what it is used for.
-- `type`: can be any of `platform`, `element`, or `flag`. The builder does not make any technical distinction between each type of feature, however it is strongly encouraged that each image uses exactly one platform and flags should only perform minor changes and not include any other features.
-- `features`: (*optional*) sub-structure containing related features
-	- `include`: (*optional*) list of features that will automatically be included as well if this feature gets included
-	- `exclude`: (*optional*) list of features that are incompatible with this feature. If any of these features were included implicitly from another they will be removed from the feature set. If they were explicitly provided as part of the target the build will fail.
+- `description`: (*optional*) A string explaining the purpose or functionality of the feature.
+- `type`: Can be one of the following: `platform`, `element`, or `flag`. While the builder does not make any technical distinctions between these feature types, it is recommended that each image uses only one platform, and flags should be used for minor changes without including other features.
+- `features`: (*optional*) A sub-structure that contains related features.
+	- `include`: (*optional*) A list of features that will automatically be included if this feature is selected.
+	- `exclude`: (*optional*) A list of features that are incompatible with this feature. If any of these features were implicitly included from another feature, they will be removed from the feature set. If they were explicitly provided as part of the target, the build will fail.
 
-An example `info.yaml` looks as follows:
+Here's an example of an `info.yaml` file:
 
 ```yaml
-description: example platform feature
+description: Example platform feature
 type: platform
 features:
   include:
@@ -23,7 +23,7 @@ features:
     - C
 ```
 
-Additionally a feature may contain any of the following:
+In addition to the `info.yaml` file, a feature may include the following options:
 
 ## `pkg.include`
 
@@ -31,22 +31,17 @@ A list of packages to be installed into the image.
 
 ## `pkg.exclude`
 
-A list of packages to be ignored if provided by another features `pkg.include`
+A list of packages to be ignored if they are provided by another feature's `pkg.include` option.
 
 ## `file.include`
 
-A directory containing files to copy into the target rootfs.
-This directory is copied recursively into the root directory.
-By default only the executable bit of the files permission will be preserved when copying.
-The other permissions will be set to read write for owner and read for group and other.
-The owner of all copied files will be root by default.
+A directory containing files to be copied into the target rootfs. This directory is recursively copied into the root directory. By default, only the executable bit of the file permissions is preserved during the copy process. The other permissions will be set to read/write for the owner and read-only for the group and others. The owner of all copied files will be root by default.
 
-To overwrite these defaults see `file.include.stat` below
+To override these defaults, refer to the `file.include.stat` option below.
 
 ## `file.include.stat`
 
-A file to assign owner and permissions to files copied by `file.include`.
-Each line should contain an entry of the form:
+A file that specifies the owner and permissions for files copied by `file.include`. Each line should follow the format:
 
 ```
 user group permissions file
@@ -54,24 +49,21 @@ user group permissions file
 
 ## `file.exclude`
 
-A list of files / directories to remove from the rootfs at the end of the configure stage.
-Wildcard in file paths are allowed.
+A list of files/directories to be removed from the rootfs at the end of the configure stage. Wildcards in file paths are allowed.
 
-## `exec.config` `exec.early` `exec.late` `exec.post`
+## `exec.config`, `exec.early`, `exec.late`, `exec.post`
 
-Scripts to be executed to configure the image.
-All scripts except `exec.post` are executed inside the rootfs of the system being build without any parameters.
-`exec.post` is executed inside the builder container with the path of the rootfs provided as `argv[1]`.
+Scripts to be executed for image configuration. All scripts except `exec.post` are executed within the rootfs of the system being built without any parameters. `exec.post` is executed within the builder container, and the path of the rootfs is provided as `argv[1]`.
 
-The order of exectution is as follows:
+The order of execution is as follows:
 
-- bootstrap (outside chroot)
+- Bootstrap (outside chroot)
 - `exec.early`
-- package install (from `pkg.include`)
-- copy files from `file.include` and set permissions according to `file.stat`
+- Package installation (from `pkg.include`)
+- Copy files from `file.include` and set permissions according to `file.include.stat`
 - `exec.config`
 - `exec.late`
-- remove files according to `file.exclude`
+- Remove files according to `file.exclude`
 - `exec.post` (outside chroot)
 
-When building with multiple features the execution steps of each feature are interleaved; so for example the `exec.config` step will run for all features before any features `exec.late` runs.
+When building with multiple features, the execution steps of each feature are interleaved. For example, the `exec.config` step will run for all features before any features' `exec.late` step runs.
