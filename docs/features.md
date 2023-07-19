@@ -41,9 +41,9 @@ By default only the executable bit of the files permission will be preserved whe
 The other permissions will be set to read write for owner and read for group and other.
 The owner of all copied files will be root by default.
 
-To overwrite these defaults see `file.stat` below
+To overwrite these defaults see `file.include.stat` below
 
-## `file.stat`
+## `file.include.stat`
 
 A file to assign owner and permissions to files copied by `file.include`.
 Each line should contain an entry of the form:

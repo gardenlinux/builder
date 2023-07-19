@@ -69,13 +69,18 @@ for feature in "${features[@]}"; do
 done
 
 for feature in "${features[@]}"; do
-	if [ -e "/builder/features/$feature/file.stat" ]; then
-		sed 's/#.*$//;/^[[:space:]]*$/d' "/builder/features/$feature/file.stat" | while read -r user group perm file; do
-			old_stat="$(stat -c '%A %U:%G' "$file")"
-			chown "$user:$group" "$file"
-			chmod "$perm" "$file"
-			new_stat="$(stat -c '%A %U:%G' "$file")"
-			printf '%s: %s -> %s\n' "$file" "$old_stat" "$new_stat"
+	if [ -e "/builder/features/$feature/file.include.stat" ]; then
+		sed 's/#.*$//;/^[[:space:]]*$/d' "/builder/features/$feature/file.include.stat" | while read -r user group perm files; do
+			set +f
+			shopt -s globstar
+			shopt -s nullglob
+			for file in $files; do
+				old_stat="$(stat -c '%A %U:%G' "$file")"
+				chown "$user:$group" "$file"
+				chmod "$perm" "$file"
+				new_stat="$(stat -c '%A %U:%G' "$file")"
+				printf '%s: %s -> %s\n' "$file" "$old_stat" "$new_stat"
+			done
 		done
 	fi
 done
