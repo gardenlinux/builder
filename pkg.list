@@ -8,6 +8,7 @@ cryptsetup
 curl
 datefudge
 debootstrap
+dracut
 e2fsprogs
 fdisk
 gnupg2
