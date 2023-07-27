@@ -1,6 +1,7 @@
 binutils-aarch64-linux-gnu
 binutils-x86-64-linux-gnu
 bsdextrautils
+bubblewrap
 ca-certificates
 cpio
 cryptsetup
@@ -15,6 +16,8 @@ libengine-pkcs11-openssl
 libjson-c5
 make
 mtools
+ostree
+ostree-boot
 python3
 python3-mako
 python3-networkx
