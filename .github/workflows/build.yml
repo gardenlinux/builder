@@ -12,7 +12,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends qemu-user-static
-          podman login -u ${{ github.actor }} -p ${{ github.token }} ghcr.io
+          podman login -u token -p ${{ github.token }} ghcr.io
           podman build --squash-all --arch amd64 --tag ghcr.io/${{ github.repository }}:amd64-${{ github.sha }} .
           podman push ghcr.io/${{ github.repository }}:amd64-${{ github.sha }}
           podman build --squash-all --arch arm64 --tag ghcr.io/${{ github.repository }}:arm64-${{ github.sha }} .
