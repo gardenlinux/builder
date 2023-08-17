@@ -1,14 +1,12 @@
 binutils-aarch64-linux-gnu
 binutils-x86-64-linux-gnu
 bsdextrautils
-bubblewrap
 ca-certificates
 cpio
 cryptsetup
 curl
 datefudge
 debootstrap
-dracut
 e2fsprogs
 fdisk
 gnupg2
