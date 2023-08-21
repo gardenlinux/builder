@@ -26,4 +26,5 @@ sbsigntool
 squashfs-tools
 systemd
 uidmap
+xorriso
 xz-utils
