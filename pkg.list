@@ -7,6 +7,7 @@ cryptsetup
 curl
 datefudge
 debootstrap
+dosfstools
 e2fsprogs
 fdisk
 gnupg2
