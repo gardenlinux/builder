@@ -23,6 +23,7 @@ def main():
 
 	args_type_allowed = [
 		"cname",
+		"cname_base",
 		"features",
 		"platforms",
 		"flags",
@@ -46,8 +47,11 @@ def main():
 	else:
 		input_features = args.features
 
+	arch = None
 	if args.arch:
 		arch = args.arch
+
+	version = None
 	if args.version:
 		version = args.version
 
@@ -90,7 +94,9 @@ def main():
 	cname_base = get_cname_base(sorted_minimal_features)
 	cname = f"{cname_base}-{arch}-{version}"
 
-	if args.type == "cname":
+	if args.type == "cname_base":
+		print(cname_base)
+	elif args.type == "cname":
 		print(cname)
 	elif args.type == "features":
 		print(",".join(features))
