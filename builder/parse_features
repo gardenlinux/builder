@@ -36,6 +36,10 @@ def main():
 	args = parser.parse_args()
 
 	assert bool(args.features) ^ bool(args.cname), "please provide either `--features` or `--cname` argument"
+
+	arch = None
+	version = None
+
 	if args.cname:
 		search = re.search("^([a-z][a-zA-Z0-9_-]*?)(-(amd64|arm64)(-([a-z0-9.]+))?)?$", args.cname)
 		assert search, f"not a valid cname {args.cname}"
@@ -47,11 +51,9 @@ def main():
 	else:
 		input_features = args.features
 
-	arch = None
 	if args.arch:
 		arch = args.arch
 
-	version = None
 	if args.version:
 		version = args.version
 
