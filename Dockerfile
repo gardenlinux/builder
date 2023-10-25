@@ -1,6 +1,6 @@
 FROM debian:testing AS mv_data
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential ca-certificates git
-RUN git clone --depth=1 https://github.com/nkraetzschmar/mv_data
+RUN git clone --depth=1 https://github.com/gardenlinux/mv_data
 RUN make -C mv_data install
 
 FROM debian:testing AS aws-kms-pkcs11
