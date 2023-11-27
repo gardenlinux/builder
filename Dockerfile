@@ -12,6 +12,10 @@ RUN cd aws-kms-pkcs11 && make -j "$(nproc)" AWS_SDK_STATIC=y install
 RUN cp "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so" /aws_kms_pkcs11.so
 
 FROM debian:testing
+
+LABEL org.opencontainers.image.source="https://github.com/gardenlinux/builder"
+LABEL org.opencontainers.image.description="Builder for Garden Linux"
+
 COPY pkg.list /pkg.list
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $(cat /pkg.list) && rm /pkg.list
 COPY --from=mv_data /usr/bin/mv_data /usr/bin/mv_data
