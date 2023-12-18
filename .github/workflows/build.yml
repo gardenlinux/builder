@@ -61,7 +61,6 @@ jobs:
   # Run for new intentional versions, bumping the major or minor version
   release-semver:
     runs-on: ubuntu-latest
-    permissions: write-all
     needs: build
     if: github.ref == 'refs/heads/main' && github.event.inputs.component != ''
     steps:
