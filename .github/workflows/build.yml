@@ -1,4 +1,15 @@
-on: push
+name: Build and Release
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: 'Version component to increment (Use *minor* unless we have breaking changes)'
+        required: false
+        type: choice
+        options:
+          - minor
+          - major
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,10 +37,12 @@ jobs:
         with:
           name: build
           path: build
-  release:
+
+  # Run for new commits on the main branch
+  release-latest:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event.inputs.component == ''
     steps:
       - uses: actions/checkout@v3
       - name: tag latest
@@ -42,5 +55,32 @@ jobs:
           path: download
       - name: create release
         run: |
-          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest Builder)"
+          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest "Builder (latest)")"
+          .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
+
+  # Run for new intentional versions, bumping the major or minor version
+  release-new-version:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event.inputs.component != ''
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: download
+      - run: echo Version Component to Increase is ${{ github.event.inputs.component }}
+      - name: Get Version Number
+        run: .github/workflows/bump.py ${{ github.event.inputs.component }}
+        id: bump
+      - run: echo New version number ${{ steps.bump.outputs.newVersion }}
+      - name: tag version
+        run: |
+          git tag ${{ steps.bump.outputs.newVersion }}
+          git push origin ${{ steps.bump.outputs.newVersion }}
+      - name: create release (new version)
+        run: |
+          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create ${{ steps.bump.outputs.newVersion }} "Builder (${{ steps.bump.outputs.newVersion }})")"
           .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
