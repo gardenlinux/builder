@@ -59,7 +59,7 @@ jobs:
           .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
 
   # Run for new intentional versions, bumping the major or minor version
-  release-semver:
+  release-new-version:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main' && github.event.inputs.component != ''
@@ -80,7 +80,7 @@ jobs:
         run: |
           git tag ${{ steps.bump.outputs.newVersion }}
           git push origin ${{ steps.bump.outputs.newVersion }}
-      - name: create release (semantic)
+      - name: create release (new version)
         run: |
           release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create ${{ steps.bump.outputs.newVersion }} "Builder (${{ steps.bump.outputs.newVersion }})")"
           .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
