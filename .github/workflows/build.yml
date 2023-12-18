@@ -1,11 +1,15 @@
+name: Build and Release
 on:
   push:
   workflow_dispatch:
     inputs:
       component:
-        description: 'Version component to increment (major or minor)'
+        description: 'Version component to increment (Use *minor* unless we have breaking changes)'
         required: false
-        default: 'minor'
+        type: choice
+        options:
+          - minor
+          - major
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,14 +37,15 @@ jobs:
         with:
           name: build
           path: build
-  release:
+
+  # Run for new commits on the main branch
+  release-latest:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event.inputs.component == ''
     steps:
       - uses: actions/checkout@v3
       - name: tag latest
-        if: github.event.inputs.component == ''
         run: |
           git tag --force latest
           git push --force origin latest
@@ -48,27 +53,35 @@ jobs:
         with:
           name: build
           path: download
-      - run: echo Version Component to Increase is ${{ github.event.inputs.component }}
-      - name: create release (latest)
-        if: github.event.inputs.component == ''
+      - name: create release
         run: |
-          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest Builder)"
+          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest "Builder (latest)")"
           .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
-      - name: Get Version Number
-        if: github.event.inputs.component != ''
-        uses: gardenlinux/bump-version@main
-        id: bump
+
+  # Run for new intentional versions, bumping the major or minor version
+  release-semver:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event.inputs.component != ''
+    steps:
+      - uses: actions/checkout@v3
         with:
-          component: ${{ github.event.inputs.component }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: download
+      - run: echo Version Component to Increase is ${{ github.event.inputs.component }}
+      - name: Get Version Number
+        run: .github/workflows/bump.py ${{ github.event.inputs.component }}
+        id: bump
       - run: echo New version number ${{ steps.bump.outputs.newVersion }}
-        if: github.event.inputs.component != ''
       - name: tag version
-        if: github.event.inputs.component != ''
         run: |
           git tag ${{ steps.bump.outputs.newVersion }}
           git push origin ${{ steps.bump.outputs.newVersion }}
       - name: create release (semantic)
-        if: github.event.inputs.component != ''
         run: |
-          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create ${{ steps.bump.outputs.newVersion }} Builder)"
+          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create ${{ steps.bump.outputs.newVersion }} "Builder (${{ steps.bump.outputs.newVersion }})")"
           .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
