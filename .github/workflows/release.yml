@@ -1,0 +1,59 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: 'Version component to increment (Use *minor* unless we have breaking changes)'
+        required: false
+        type: choice
+        options:
+          - minor
+          - major
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: gardenlinux/workflow-telemetry-action@v1
+        with:
+          metric_frequency: 1
+          comment_on_pr: false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build
+
+  release-new-version:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event.inputs.component != ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: echo Version Component to Increase is ${{ github.event.inputs.component }}
+      - name: Get Version Number
+        run: .github/workflows/bump.py ${{ github.event.inputs.component }}
+        id: bump
+      - run: echo New version number ${{ steps.bump.outputs.newVersion }}
+      - name: tag container image
+        run: |
+          SHA=$(git rev-parse HEAD)
+          podman login -u token -p ${{ github.token }} ghcr.io
+          podman pull ghcr.io/${{ github.repository }}:amd64-"$SHA"
+          podman pull ghcr.io/${{ github.repository }}:arm64-"$SHA"
+          podman manifest create ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
+          podman manifest add ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }} ghcr.io/${{ github.repository }}:amd64-"$SHA"
+          podman manifest add ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }} ghcr.io/${{ github.repository }}:arm64-"$SHA"
+          podman manifest push ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
+          sed -i 's|container_image=localhost/builder|container_image=ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}|' build
+      - name: git tag
+        run: |
+          git tag ${{ steps.bump.outputs.newVersion }}
+          git push origin ${{ steps.bump.outputs.newVersion }}
+      - name: create release (new version)
+        run: |
+          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create ${{ steps.bump.outputs.newVersion }} "Builder (${{ steps.bump.outputs.newVersion }})")"
+          .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
