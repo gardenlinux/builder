@@ -31,7 +31,7 @@ jobs:
           podman manifest create ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
           podman manifest add ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }} ghcr.io/${{ github.repository }}:amd64-"$SHA"
           podman manifest add ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }} ghcr.io/${{ github.repository }}:arm64-"$SHA"
-          podman manifest push ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
+          podman push ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
           sed -i 's|container_image=localhost/builder|container_image=ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}|' build
       - name: git tag
         run: |
@@ -40,4 +40,4 @@ jobs:
       - name: create release (new version)
         run: |
           release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create ${{ steps.bump.outputs.newVersion }} "Builder (${{ steps.bump.outputs.newVersion }})")"
-          .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
+          .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" build
