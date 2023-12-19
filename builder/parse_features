@@ -168,6 +168,7 @@ def read_feature_files(feature_dir):
 			if attr not in [ "include", "exclude" ]:
 				continue
 			for ref in node_features[attr]:
+				assert os.path.isfile(f"{feature_dir}/{ref}/info.yaml"), f"feature {node} references feature {ref}, but {feature_dir}/{ref}/info.yaml does not exist"
 				feature_graph.add_edge(node, ref, attr=attr)
 	assert networkx.is_directed_acyclic_graph(feature_graph)
 	return feature_graph
