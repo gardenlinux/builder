@@ -23,6 +23,7 @@ def main():
 
 	args_type_allowed = [
 		"cname",
+		"cname_base",
 		"features",
 		"platforms",
 		"flags",
@@ -35,6 +36,10 @@ def main():
 	args = parser.parse_args()
 
 	assert bool(args.features) ^ bool(args.cname), "please provide either `--features` or `--cname` argument"
+
+	arch = None
+	version = None
+
 	if args.cname:
 		search = re.search("^([a-z][a-zA-Z0-9_-]*?)(-(amd64|arm64)(-([a-z0-9.]+))?)?$", args.cname)
 		assert search, f"not a valid cname {args.cname}"
@@ -48,6 +53,7 @@ def main():
 
 	if args.arch:
 		arch = args.arch
+
 	if args.version:
 		version = args.version
 
@@ -90,7 +96,9 @@ def main():
 	cname_base = get_cname_base(sorted_minimal_features)
 	cname = f"{cname_base}-{arch}-{version}"
 
-	if args.type == "cname":
+	if args.type == "cname_base":
+		print(cname_base)
+	elif args.type == "cname":
 		print(cname)
 	elif args.type == "features":
 		print(",".join(features))
@@ -160,6 +168,7 @@ def read_feature_files(feature_dir):
 			if attr not in [ "include", "exclude" ]:
 				continue
 			for ref in node_features[attr]:
+				assert os.path.isfile(f"{feature_dir}/{ref}/info.yaml"), f"feature {node} references feature {ref}, but {feature_dir}/{ref}/info.yaml does not exist"
 				feature_graph.add_edge(node, ref, attr=attr)
 	assert networkx.is_directed_acyclic_graph(feature_graph)
 	return feature_graph

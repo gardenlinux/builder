@@ -2,11 +2,17 @@
 
 This tutorial will walk you through the process of creating a custom Linux image using the Builder tool. We will start with the Builder example repository and build a feature to add an `nginx` HTTP server to our image.
 
-Let's begin by cloning the Builder example repository:
+Let's begin by creating a new GitHub repository based on the Builder example repository using this link:
+
+https://github.com/new?template_name=builder_example&template_owner=gardenlinux
+
+This repo has a GitHub Actions workflow enabled, so it will already start building the image on GitHub's hosted runners.
+
+To customize the image, clone the repo locally:
 
 ```shell
-git clone https://github.com/gardenlinux/builder_example
-cd builder_example
+git clone https://github.com/your_username/my_linux_image
+cd my_linux_image
 ```
 
 To ensure that your local Podman installation is working correctly, you can test it by running the following command:
@@ -91,4 +97,27 @@ qemu-system-x86_64 -m 2048 -nodefaults -display none -serial mon:stdio -drive if
 
 If everything worked as intended, you should see the system boot up. Once the system is booted, opening http://localhost:8080 in a browser should display the "Hello World!" message.
 
-Congratulations! You have successfully created your first feature for the Builder. :tada:
+To also build the new image on GitHub Actions, we'll need to modify the `.github/workflows/build.yml` file.
+
+Let's change the *build* step to include the `nginx` feature we just created, and let's upload our built image to GitHub's artifact storage:
+
+```diff
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 181a646..9e4261e 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -13,4 +13,8 @@ jobs:
+     steps:
+       - uses: actions/checkout@v3
+       - name: Build the image
+-        run: ./build base
++        run: ./build base-nginx
++      - uses: actions/upload-artifact@v3
++        with:
++          name: my-linux-image
++          path: .build/
+```
+
+Now commit and push your changes and GitHub will build the image for you.
+
+Congratulations! You have successfully created your first feature for the Builder and setup a CI Pipeline to build the image. :tada:

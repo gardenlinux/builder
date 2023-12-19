@@ -1,3 +1,4 @@
+binutils
 binutils-aarch64-linux-gnu
 binutils-x86-64-linux-gnu
 bsdextrautils
@@ -7,6 +8,7 @@ cryptsetup
 curl
 datefudge
 debootstrap
+dosfstools
 e2fsprogs
 fdisk
 gnupg2
@@ -15,13 +17,17 @@ libengine-pkcs11-openssl
 libjson-c5
 make
 mtools
+ostree
+ostree-boot
 python3
 python3-mako
 python3-networkx
+python3-pefile
 python3-yaml
 qemu-utils
 sbsigntool
 squashfs-tools
 systemd
 uidmap
+xorriso
 xz-utils

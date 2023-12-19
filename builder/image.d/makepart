@@ -50,7 +50,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 	resize=1
 	verity=0
 	secureboot=0
-	syslinux=$([[ "$(cut -c -5 <<< "$target")" = "/boot" ]] && [[ -f "$rootfs/usr/bin/syslinux" ]] && echo 1 || echo 0)
+	syslinux=$([[ "$(cut -c -5 <<< "$target")" = "/boot" ]] || [[ "$(tr -d '[:blank:]' <<< "$target")" = "/efi" ]] && [[ -f "$rootfs/usr/bin/syslinux" ]] && echo 1 || echo 0)
 	ephemeral=0
 	ephemeral_cryptsetup=0
 	weight=1

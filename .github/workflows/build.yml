@@ -1,13 +1,16 @@
-on: push
+name: Build
+on:
+  push:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: nkraetzschmar/workflow-telemetry-action@v1
+      - uses: gardenlinux/workflow-telemetry-action@v1
         with:
           metric_frequency: 1
           comment_on_pr: false
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: build
         run: |
           sudo apt-get update
@@ -26,12 +29,14 @@ jobs:
         with:
           name: build
           path: build
-  release:
+
+  # Run for new commits on the main branch
+  release-latest:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: tag latest
         run: |
           git tag --force latest
@@ -42,5 +47,5 @@ jobs:
           path: download
       - name: create release
         run: |
-          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest Builder)"
+          release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest "Builder (latest)")"
           .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
