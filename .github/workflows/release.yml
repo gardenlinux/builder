@@ -10,7 +10,6 @@ on:
           - minor
           - major
 jobs:
-
   release-new-version:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event.inputs.component != ''
@@ -19,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: echo Version Component to Increase is ${{ github.event.inputs.component }}
-      - name: Get Version Number
+      - name: get next version number
         run: .github/workflows/bump.py ${{ github.event.inputs.component }}
         id: bump
       - run: echo New version number ${{ steps.bump.outputs.newVersion }}

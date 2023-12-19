@@ -15,3 +15,7 @@ It should be run if a new release is desired.
 The workflow dispatch needs a parameter `component` which specifies which version component should be increased.
 This is either `minor` (the default) or `major`.
 `major` should be picked in cases where the new version has breaking changes (for example between the `build` script and the container image).
+
+## `differential-shellcheck.yml`
+
+Finds new warnings using [shellcheck](https://www.shellcheck.net)
