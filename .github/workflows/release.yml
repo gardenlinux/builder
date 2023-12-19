@@ -26,6 +26,7 @@ jobs:
         run: |
           SHA=$(git rev-parse HEAD)
           podman login -u token -p ${{ github.token }} ghcr.io
+          set -x
           podman pull ghcr.io/${{ github.repository }}:amd64-"$SHA"
           podman pull ghcr.io/${{ github.repository }}:arm64-"$SHA"
           podman manifest create ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
