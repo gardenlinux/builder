@@ -7,6 +7,9 @@ container_image=localhost/builder
 container_engine=podman
 target_dir=.build
 
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+readonly SCRIPT_DIR
+
 container_run_opts=(
 	--security-opt seccomp=unconfined
 	--security-opt apparmor=unconfined
@@ -113,6 +116,15 @@ if [ "$use_kms" = 1 ]; then
 		fi
 	done
 fi
+
+# Default values which can be overriden via 'build.config' file
+tempfs_size=2G
+
+if [[ -f "$SCRIPT_DIR"/build.config ]]; then
+	. "$SCRIPT_DIR"/build.config
+fi
+
+make_opts+=("TEMPFS_SIZE=$tempfs_size")
 
 if [ -d cert ]; then
 	container_mount_opts+=(-v "$PWD/cert:/builder/cert:ro")

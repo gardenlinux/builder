@@ -29,6 +29,11 @@ jobs:
         with:
           name: build
           path: build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build.config
+          path: build.config
+
 
   # Run for new commits on the main branch
   release-latest:
@@ -49,3 +54,4 @@ jobs:
         run: |
           release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest "Builder (latest)")"
           .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build
+          .github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} upload "$release" download/build.config

@@ -21,7 +21,7 @@ $$(error '$1 undefined')
 endif
 endef
 
-required_vars := REPO COMMIT TIMESTAMP DEFAULT_VERSION
+required_vars := REPO COMMIT TIMESTAMP DEFAULT_VERSION TEMPFS_SIZE
 $(foreach var,$(required_vars),$(eval $(call require_var,$(var))))
 
 SHORT_COMMIT := $(shell head -c 8 <<< '$(COMMIT)')
