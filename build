@@ -114,6 +114,15 @@ if [ "$use_kms" = 1 ]; then
 	done
 fi
 
+# Default values which can be overriden via 'build.config' file
+tempfs_size=2G
+
+if [[ -f "$PWD"/build.config ]]; then
+	. "$PWD"/build.config
+fi
+
+make_opts+=("TEMPFS_SIZE=$tempfs_size")
+
 if [ -d cert ]; then
 	container_mount_opts+=(-v "$PWD/cert:/builder/cert:ro")
 fi
