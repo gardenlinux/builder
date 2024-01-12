@@ -50,6 +50,10 @@ jobs:
         with:
           name: build
           path: download
+      - uses: actions/download-artifact@v3
+        with:
+          name: build.config
+          path: download
       - name: create release
         run: |
           release="$(.github/workflows/release.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} create latest "Builder (latest)")"
