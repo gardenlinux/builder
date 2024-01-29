@@ -24,6 +24,7 @@ partitions="$(mktemp)"
 final_partition="$(mktemp)"
 secureboot_partitions="$(mktemp)"
 efi_partition="$(mktemp)"
+tpm_used="$(mktemp)"
 
 part_num=0
 
@@ -55,6 +56,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 	ephemeral_cryptsetup=0
 	weight=1
 	is_final_partition=0
+	tpm2=0
 	while IFS="=" read -r key value; do
 		case "$key" in
 			"type")
@@ -85,6 +87,9 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 			"final_partition")
 				is_final_partition=1
 				;;
+			"tpm2")
+				tpm2=1
+				;;
 		esac
 	done < <(echo "$args" | tr "," "\n")
 
@@ -95,6 +100,10 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 
 	if [[ "$ephemeral" = 1 ]] || [[ "$ephemeral_cryptsetup" = 1 ]] && [[ -z "$repart" ]]; then
 		echo "WARNING: ephemeral flag only works for partitions created by systemd-repart"
+	fi
+
+	if [[ "$tpm2" = 1 ]]; then
+		echo 1 > $tpm_used
 	fi
 
 	if [[ "$depth" = 0 ]]; then
@@ -249,9 +258,14 @@ if [[ -z "$(cat "$root_hash")" ]]; then
 		cmdline="root=$root_source $cmdline"
 	fi
 
+	secureboot_flags=()
+	if [ -n "$(cat "$tpm_used")" ]; then
+		secureboot_flags+=("--tpm2")
+	fi
+
 	# enable verity if the root partition is writable, but any other partition has verity enabled, most likely /usr
 	if ( [ -n "$(cat "$veritytab")" ] || [ -n "$used_repart_disk" ]; ) && [ ! -s "$secureboot_partitions" ]; then
-		makesecureboot -r "$rootfs" -c "$cmdline" -v "$veritytab" -i "$dracut_include" -t "$BUILDER_TIMESTAMP" -s "false" < "$efi_partition"
+		makesecureboot -r "$rootfs" -c "$cmdline" -v "$veritytab" -i "$dracut_include" -t "$BUILDER_TIMESTAMP" -s "false" "${secureboot_flags[@]}" < "$efi_partition"
 	fi
 else
 	cmdline="roothash=$(cat "$root_hash") root=/dev/mapper/root $cmdline"
@@ -268,5 +282,5 @@ fi
 cat "$partitions" "$final_partition" >&3
 
 # cleanup
-rm "$fstab" "$veritytab" "$root_hash" "$root_repart" "$partitions" "$final_partition" "$secureboot_partitions"
+rm "$fstab" "$veritytab" "$root_hash" "$root_repart" "$partitions" "$final_partition" "$secureboot_partitions" "$tpm_used"
 rm -rf "$dracut_include"
