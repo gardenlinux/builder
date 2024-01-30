@@ -10,6 +10,7 @@ ephemeral=0
 cryptsetup=0
 weight=1
 def_only=0
+tpm2="off"
 
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -44,6 +45,12 @@ while [ $# -gt 0 ]; do
 		-d|--def-only)
 			def_only=1
 			shift
+			;;
+		--tpm2)
+			if [ "$2" = 1 ]; then
+				tpm2="tpm2"
+			fi
+			shift 2
 			;;
 		*)
 			break
@@ -230,6 +237,7 @@ else
 	Weight=$weight
 	Format=$fs
 	CopyFiles=/etc/repart.templates/$repart_uuid:/
+	Encrypt=$tpm2
 	EOF
 
 	dev_path="/dev/disk/by-partuuid/$repart_uuid"

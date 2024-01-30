@@ -135,7 +135,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 			find "$data_source/boot" -type f -delete
 			echo 1 > "$root_repart"
 		fi
-		make_repart_partition -t "$target" -f "$fs" -o "$options" -g "$type" -e "$ephemeral" -c "$ephemeral_cryptsetup" -w "$weight" "$repart" "$data_source" "$dracut_include"
+		make_repart_partition -t "$target" -f "$fs" -o "$options" -g "$type" -e "$ephemeral" -c "$ephemeral_cryptsetup" -w "$weight" --tpm2 "$tpm2" "$repart" "$data_source" "$dracut_include"
 		find "$data_source" -depth -mindepth 1 -delete
 		continue
 	fi
