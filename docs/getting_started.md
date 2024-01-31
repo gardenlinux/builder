@@ -38,7 +38,7 @@ Now that we have verified that everything is working correctly, let's proceed to
 ```shell
 mkdir features/nginx
 ```
-> [!NOTE]
+
 > This is where our nginx feature will live.
 Features are a concept of the builder that allows us to build variants of images.
 For example, if we wanted to add an alternative HTTP server later, we could add an `apacheHttpd` feature.
@@ -51,7 +51,7 @@ description: HTTP server using Nginx
 type: element
 ```
 
-> [!NOTE]
+
 > The `info.yaml` file is required for each feature by the builder.
 
 3. Create a file named `pkg.include` inside `features/nginx` with the following content:
@@ -60,7 +60,7 @@ type: element
 nginx
 ```
 
-> [!NOTE]
+
 > `pkg.include` is a list of packages this feature needs, each feature on a new line.
 
 4. Create a file named `exec.config` inside `features/nginx` with the following content:
@@ -73,7 +73,7 @@ set -eufo pipefail
 systemctl enable nginx
 ```
 
-> [!NOTE]
+
 > `exec.config` is a shell script we can use to customize our image.
 In this case, we [enable the systemd unit for nginx](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html#enable%20UNIT…) which makes nginx start on boot.
 
@@ -89,7 +89,7 @@ chmod +x features/nginx/exec.config
 mkdir -p features/nginx/file.include/var/www/html
 ```
 
-> [!NOTE]
+
 > The `file.include` directory allows us to merge files and directories into the root filesystem of our image.
 
 7. Create a dummy `index.html` file inside `features/nginx/file.include/var/www/html` with content like the following (or customize it as desired):
