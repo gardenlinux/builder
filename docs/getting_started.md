@@ -49,12 +49,17 @@ At image build time, we could pick if we want the `nginx` or the `apacheHttpd` f
 ```yaml
 description: HTTP server using Nginx
 type: element
+features:
+  include:
+    - base
 ```
 
-
 > The `info.yaml` file is required for each feature by the builder.
+We'll specify that our `nginx` feature includes the `base` feature.
+This makes sense because the `nginx` feature on its own does not contain a full operating system, so to get a bootable image we include the debian system as it is defined in `base`.
+See [features.md](./features.md) for detailed information on the structure of features.
 
-3. Create a file named `pkg.include` inside `features/nginx` with the following content:
+1. Create a file named `pkg.include` inside `features/nginx` with the following content:
 
 ```
 nginx
@@ -106,13 +111,13 @@ mkdir -p features/nginx/file.include/var/www/html
 To test your feature, build the image using the following command:
 
 ```shell
-./build base-nginx
+./build nginx
 ```
 
 You can then run the image with QEMU using the following command:
 
 ```shell
-qemu-system-x86_64 -m 2048 -nodefaults -display none -serial mon:stdio -drive if=pflash,unit=0,readonly=on,format=raw,file=/usr/share/OVMF/OVMF_CODE.fd -drive if=virtio,format=raw,file=.build/base-nginx-amd64-trixie-local.raw -netdev user,id=net0,hostfwd=tcp::8080-:80 -device virtio-net-pci,netdev=net0
+qemu-system-x86_64 -m 2048 -nodefaults -display none -serial mon:stdio -drive if=pflash,unit=0,readonly=on,format=raw,file=/usr/share/OVMF/OVMF_CODE.fd -drive if=virtio,format=raw,file=.build/nginx-amd64-trixie-local.raw -netdev user,id=net0,hostfwd=tcp::8080-:80 -device virtio-net-pci,netdev=net0
 ```
 
 If everything worked as intended, you should see the system boot up. Once the system is booted, opening http://localhost:8080 in a browser should display the "Hello World!" message.
@@ -131,7 +136,7 @@ index 181a646..9e4261e 100644
        - uses: actions/checkout@v3
        - name: Build the image
 -        run: ./build base
-+        run: ./build base-nginx
++        run: ./build nginx
 +      - uses: actions/upload-artifact@v3
 +        with:
 +          name: my-linux-image
