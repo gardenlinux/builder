@@ -18,6 +18,10 @@ LABEL org.opencontainers.image.description="Builder for Garden Linux"
 
 COPY pkg.list /pkg.list
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $(cat /pkg.list) && rm /pkg.list
+RUN cd /tmp \
+&& curl -sSL "https://github.com/gardenlinux/package-openssl/releases/download/3.1.4-2gardenlinux0/openssl_3.1.4-2gardenlinux0_$(dpkg --print-architecture).deb" > openssl.deb \
+&& dpkg -i openssl.deb \
+&& rm openssl.deb
 COPY --from=mv_data /usr/bin/mv_data /usr/bin/mv_data
 COPY --from=aws-kms-pkcs11 /aws_kms_pkcs11.so /aws_kms_pkcs11.so
 RUN mv /aws_kms_pkcs11.so "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
