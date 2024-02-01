@@ -137,7 +137,7 @@ index 181a646..9e4261e 100644
        - name: Build the image
 -        run: ./build base
 +        run: ./build nginx
-+      - uses: actions/upload-artifact@v3
++      - uses: actions/upload-artifact@v4
 +        with:
 +          name: my-linux-image
 +          path: .build/
