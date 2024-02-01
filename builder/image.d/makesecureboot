@@ -79,7 +79,7 @@ chroot "$rootfs" env dracut \
 	--no-hostonly \
 	--force \
 	--kver "$kernel_version" \
-	--modules "bash dash systemd systemd-initrd systemd-veritysetup systemd-repart kernel-modules kernel-modules-extra terminfo udev-rules dracut-systemd base fs-lib shutdown $tpm2" \
+	--modules "bash dash systemd systemd-initrd systemd-veritysetup systemd-repart kernel-modules kernel-modules-extra terminfo udev-rules dracut-systemd base fs-lib shutdown crypt $tpm2" \
 	--install "/etc/veritytab cryptsetup head mkfs.ext4 systemd-escape lsblk" \
 	--include "$dracut_include" "/" \
 	--reproducible \

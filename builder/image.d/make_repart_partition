@@ -230,6 +230,8 @@ elif [ "$cryptsetup" = 1 ]; then
 	EOF_GENERATOR
 	chmod +x "$target/etc/systemd/system-generators/repart-$repart"
 else
+	dev_path="/dev/disk/by-partuuid/$repart_uuid"
+
 	cat > "$target/etc/repart.d/1.$repart.conf" <<-EOF
 	[Partition]
 	UUID=$repart_uuid
@@ -240,13 +242,29 @@ else
 	Encrypt=$tpm2
 	EOF
 
-	dev_path="/dev/disk/by-partuuid/$repart_uuid"
+	if [[ "$tpm2" = "tpm2" ]]; then
+		cat > "$target/etc/crypttab" <<-EOF
+		luks-$repart_uuid $dev_path
+		EOF
+
+		dev_path="/dev/mapper/luks-$repart_uuid"
+		systemd_cryptsetup_dependency="systemd-cryptsetup@luks\x2d$(systemd-escape "${repart_uuid#/}").service"
+	fi
+
 	systemd_dev_dependency="blockdev-settle@$(systemd-escape "${dev_path#/}").service"
 	mkdir -p "$target/etc/systemd/system/"
 	cat > "$target/etc/systemd/system/$sysroot_mount_unit" <<-EOF
 	[Unit]
 	Before=initrd-root-fs.target
 	After=systemd-repart.service
+	EOF
+
+	if [[ "$tpm2" = "tpm2" ]]; then
+		echo "After=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
+		echo "Requires=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
+	fi
+
+	cat >> "$target/etc/systemd/system/$sysroot_mount_unit" <<-EOF
 	After=$systemd_dev_dependency
 	Requires=$systemd_dev_dependency
 	[Mount]
