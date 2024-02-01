@@ -5,7 +5,11 @@ Each feature must contain an `info.yaml` file that adheres to the following stru
 ## `info.yaml` file structure:
 
 - `description`: (*optional*) A string explaining the purpose or functionality of the feature.
-- `type`: Can be one of the following: `platform`, `element`, or `flag`. While the builder does not make any technical distinctions between these feature types, it is recommended that each image uses only one platform, and flags should be used for minor changes without including other features.
+- `type`: Can be one of the following:
+  - `platform`
+  - `element`
+  - `flag`
+  - While the builder does not make any technical distinctions between these feature types, it is recommended that each image uses only one `platform`, and `flag` should be used for minor changes without including other features.
 - `features`: (*optional*) A sub-structure that contains related features.
 	- `include`: (*optional*) A list of features that will automatically be included if this feature is selected.
 	- `exclude`: (*optional*) A list of features that are incompatible with this feature. If any of these features were implicitly included from another feature, they will be removed from the feature set. If they were explicitly provided as part of the target, the build will fail.
@@ -53,7 +57,7 @@ A list of files/directories to be removed from the rootfs at the end of the conf
 
 ## `exec.config`, `exec.early`, `exec.late`, `exec.post`
 
-Scripts to be executed for image configuration. All scripts except `exec.post` are executed within the rootfs of the system being built without any parameters. `exec.post` is executed within the builder container, and the path of the rootfs is provided as `argv[1]`.
+Scripts to be executed for image configuration. Script files need the executable bit set. All scripts except `exec.post` are executed within the rootfs of the system being built without any parameters. `exec.post` is executed within the builder container, and the path of the rootfs is provided as `argv[1]`.
 
 The order of execution is as follows:
 
