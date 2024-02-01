@@ -260,6 +260,9 @@ if [[ -z "$(cat "$root_hash")" ]]; then
 
 	secureboot_flags=()
 	if [ -n "$(cat "$tpm_used")" ]; then
+		mkdir -p "$dracut_include/usr/lib/sysusers.d"
+		echo "u tss - \"TPM software stack\" /var/lib/tpm /bin/false" > "$dracut_include/usr/lib/sysusers.d/tpm2-tss.conf"
+
 		secureboot_flags+=("--tpm2")
 	fi
 
