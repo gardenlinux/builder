@@ -103,7 +103,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 	fi
 
 	if [[ "$tpm2" = 1 ]]; then
-		echo 1 > $tpm_used
+		echo 1 > "$tpm_used"
 	fi
 
 	if [[ "$depth" = 0 ]]; then
@@ -244,7 +244,7 @@ umount "$rootfs_work"
 rmdir "$rootfs_work"
 
 used_repart_disk=
-if [[ -n "$(find "$dracut_include/etc/repart.d/" -name "1.*.conf")" ]] || ( [[ -d "$dracut_include/etc/systemd/system-generators" ]] && [[ -n "$(find "$dracut_include/etc/systemd/system-generators" -name "repart-*")" ]]; ); then
+if [[ -n "$(find "$dracut_include/etc/repart.d/" -name "1.*.conf")" ]] || { [[ -d "$dracut_include/etc/systemd/system-generators" ]] && [[ -n "$(find "$dracut_include/etc/systemd/system-generators" -name "repart-*")" ]]; }; then
 	disk_uuid=$(echo "gardenlinux:$BUILDER_VERSION:disk_uuid" | uuid_hash)
 	make_repart_disk "$disk_uuid" "$dracut_include"
 	used_repart_disk=true
@@ -267,7 +267,7 @@ if [[ -z "$(cat "$root_hash")" ]]; then
 	fi
 
 	# enable verity if the root partition is writable, but any other partition has verity enabled, most likely /usr
-	if ( [ -n "$(cat "$veritytab")" ] || [ -n "$used_repart_disk" ]; ) && [ ! -s "$secureboot_partitions" ]; then
+	if { [ -n "$(cat "$veritytab")" ] || [ -n "$used_repart_disk" ]; } && [ ! -s "$secureboot_partitions" ]; then
 		makesecureboot -r "$rootfs" -c "$cmdline" -v "$veritytab" -i "$dracut_include" -t "$BUILDER_TIMESTAMP" -s "false" "${secureboot_flags[@]}" < "$efi_partition"
 	fi
 else
