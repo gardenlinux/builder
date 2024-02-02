@@ -28,6 +28,7 @@ qemu-utils
 sbsigntool
 squashfs-tools
 systemd
+systemd-ukify
 uidmap
 xorriso
 xz-utils
