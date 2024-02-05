@@ -72,7 +72,7 @@ if [ "$def_only" = 1 ]; then
 	cat > "$target/etc/repart.d/0.$(printf '%02d' "$repart").conf" <<-EOF
 	[Partition]
 	Type=$repart_type
-	Weight=0
+	Weight=$weight
 	EOF
 	exit 0
 fi
@@ -261,7 +261,7 @@ else
 
 	if [[ "$tpm2" = "tpm2" ]]; then
 		echo "After=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
-		echo "Requires=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
+		#echo "Requires=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
 	fi
 
 	cat >> "$target/etc/systemd/system/$sysroot_mount_unit" <<-EOF

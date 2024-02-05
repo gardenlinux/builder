@@ -213,9 +213,9 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 		verity_part_uuid="${hash:32:8}-${hash:40:4}-${hash:44:4}-${hash:48:4}-${hash:52:12}"
 		echo -e "$part_uuid\t$type\t$size\t$syslinux\t$file\t$label" >> "$partitions"
 		echo -e "$verity_part_uuid\tlinux\t$verity_size\t0\t$verity_file" >> "$partitions"
-		make_repart_partition -g "$type" --def-only "$part_num" "$dracut_include"
+		make_repart_partition -g "$type" --def-only --weight 0 "$part_num" "$dracut_include"
 		part_num=$((part_num + 1))
-		make_repart_partition -g linux --def-only "$part_num" "$dracut_include"
+		make_repart_partition -g linux --def-only --weight 0 "$part_num" "$dracut_include"
 		if [[ "$depth" != 0 ]]; then
 			#shellcheck disable=SC2001
 			verity_name="verity$(sed 's|/|_|' <<< "$target")"
@@ -230,7 +230,13 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 		else
 			echo -e "$part_uuid\t$type\t$size\t$syslinux\t$file\t$label" >> "$partitions"
 		fi
-		make_repart_partition -g "$type" --def-only "$part_num" "$dracut_include"
+
+		if [ "$depth" = 0 ]; then
+			make_repart_partition -g "$type" --def-only --weight 1 "$part_num" "$dracut_include"
+		else
+			make_repart_partition -g "$type" --def-only --weight 0 "$part_num" "$dracut_include"
+		fi
+		
 		echo "$source" "$target" "$fs" "$options" "$dump" "$pass" >> "$fstab"
 	fi
 
