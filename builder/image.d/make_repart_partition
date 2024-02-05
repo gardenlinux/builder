@@ -259,7 +259,7 @@ else
 
 	if [[ "$tpm2" = "tpm2" ]]; then
 		echo "After=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
-		#echo "Requires=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
+		echo "Requires=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
 	fi
 
 	cat >> "$target/etc/systemd/system/$sysroot_mount_unit" <<-EOF
