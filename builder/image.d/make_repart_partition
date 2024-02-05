@@ -243,9 +243,7 @@ else
 	EOF
 
 	if [[ "$tpm2" = "tpm2" ]]; then
-		cat > "$target/etc/crypttab" <<-EOF
-		luks-$repart_uuid $dev_path
-		EOF
+		echo "luks-$repart_uuid $dev_path" >> "$target/etc/crypttab"
 
 		dev_path="/dev/mapper/luks-$repart_uuid"
 		systemd_cryptsetup_dependency="systemd-cryptsetup@luks\x2d$(systemd-escape "${repart_uuid#/}").service"
