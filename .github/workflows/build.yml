@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: gardenlinux/workflow-telemetry-action@v1
+      - uses: gardenlinux/workflow-telemetry-action@v2
         with:
           metric_frequency: 1
           comment_on_pr: false
