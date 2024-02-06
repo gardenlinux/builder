@@ -10,6 +10,7 @@ ephemeral=0
 cryptsetup=0
 weight=1
 def_only=0
+tpm2="off"
 
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -45,6 +46,12 @@ while [ $# -gt 0 ]; do
 			def_only=1
 			shift
 			;;
+		--tpm2)
+			if [ "$2" = 1 ]; then
+				tpm2="tpm2"
+			fi
+			shift 2
+			;;
 		*)
 			break
 			;;
@@ -65,7 +72,7 @@ if [ "$def_only" = 1 ]; then
 	cat > "$target/etc/repart.d/0.$(printf '%02d' "$repart").conf" <<-EOF
 	[Partition]
 	Type=$repart_type
-	Weight=0
+	Weight=$weight
 	EOF
 	exit 0
 fi
@@ -223,6 +230,8 @@ elif [ "$cryptsetup" = 1 ]; then
 	EOF_GENERATOR
 	chmod +x "$target/etc/systemd/system-generators/repart-$repart"
 else
+	dev_path="/dev/disk/by-partuuid/$repart_uuid"
+
 	cat > "$target/etc/repart.d/1.$repart.conf" <<-EOF
 	[Partition]
 	UUID=$repart_uuid
@@ -230,15 +239,30 @@ else
 	Weight=$weight
 	Format=$fs
 	CopyFiles=/etc/repart.templates/$repart_uuid:/
+	Encrypt=$tpm2
 	EOF
 
-	dev_path="/dev/disk/by-partuuid/$repart_uuid"
+	if [[ "$tpm2" = "tpm2" ]]; then
+		echo "luks-$repart_uuid $dev_path" >> "$target/etc/crypttab"
+
+		dev_path="/dev/mapper/luks-$repart_uuid"
+		systemd_cryptsetup_dependency="systemd-cryptsetup@luks\x2d$(systemd-escape "${repart_uuid#/}").service"
+	fi
+
 	systemd_dev_dependency="blockdev-settle@$(systemd-escape "${dev_path#/}").service"
 	mkdir -p "$target/etc/systemd/system/"
 	cat > "$target/etc/systemd/system/$sysroot_mount_unit" <<-EOF
 	[Unit]
 	Before=initrd-root-fs.target
 	After=systemd-repart.service
+	EOF
+
+	if [[ "$tpm2" = "tpm2" ]]; then
+		echo "After=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
+		echo "Requires=$systemd_cryptsetup_dependency" >> "$target/etc/systemd/system/$sysroot_mount_unit"
+	fi
+
+	cat >> "$target/etc/systemd/system/$sysroot_mount_unit" <<-EOF
 	After=$systemd_dev_dependency
 	Requires=$systemd_dev_dependency
 	[Mount]

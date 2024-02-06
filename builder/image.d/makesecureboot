@@ -7,6 +7,7 @@ cert_base="/builder/cert/secureboot.db"
 timestamp=0
 secureboot="true"
 dracut_include=
+tpm2=
 
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -37,6 +38,10 @@ while [ $# -gt 0 ]; do
 		-s|--secureboot)
 			secureboot="$2"
 			shift 2
+			;;
+		--tpm2)
+			tpm2="tpm2-tss"
+			shift
 			;;
 		-i|--include)
 			dracut_include="$2"
@@ -74,7 +79,7 @@ chroot "$rootfs" env dracut \
 	--no-hostonly \
 	--force \
 	--kver "$kernel_version" \
-	--modules "bash dash systemd systemd-initrd systemd-veritysetup systemd-repart kernel-modules kernel-modules-extra terminfo udev-rules dracut-systemd base fs-lib shutdown" \
+	--modules "bash dash systemd systemd-initrd systemd-veritysetup systemd-repart kernel-modules kernel-modules-extra terminfo udev-rules dracut-systemd base fs-lib shutdown crypt $tpm2" \
 	--install "/etc/veritytab cryptsetup head mkfs.ext4 systemd-escape lsblk" \
 	--include "$dracut_include" "/" \
 	--reproducible \

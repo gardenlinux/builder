@@ -24,6 +24,7 @@ partitions="$(mktemp)"
 final_partition="$(mktemp)"
 secureboot_partitions="$(mktemp)"
 efi_partition="$(mktemp)"
+tpm_used="$(mktemp)"
 
 part_num=0
 
@@ -55,6 +56,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 	ephemeral_cryptsetup=0
 	weight=1
 	is_final_partition=0
+	tpm2=0
 	while IFS="=" read -r key value; do
 		case "$key" in
 			"type")
@@ -85,6 +87,9 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 			"final_partition")
 				is_final_partition=1
 				;;
+			"tpm2")
+				tpm2=1
+				;;
 		esac
 	done < <(echo "$args" | tr "," "\n")
 
@@ -95,6 +100,10 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 
 	if [[ "$ephemeral" = 1 ]] || [[ "$ephemeral_cryptsetup" = 1 ]] && [[ -z "$repart" ]]; then
 		echo "WARNING: ephemeral flag only works for partitions created by systemd-repart"
+	fi
+
+	if [[ "$tpm2" = 1 ]]; then
+		echo 1 > "$tpm_used"
 	fi
 
 	if [[ "$depth" = 0 ]]; then
@@ -126,7 +135,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 			find "$data_source/boot" -type f -delete
 			echo 1 > "$root_repart"
 		fi
-		make_repart_partition -t "$target" -f "$fs" -o "$options" -g "$type" -e "$ephemeral" -c "$ephemeral_cryptsetup" -w "$weight" "$repart" "$data_source" "$dracut_include"
+		make_repart_partition -t "$target" -f "$fs" -o "$options" -g "$type" -e "$ephemeral" -c "$ephemeral_cryptsetup" -w "$weight" --tpm2 "$tpm2" "$repart" "$data_source" "$dracut_include"
 		find "$data_source" -depth -mindepth 1 -delete
 		continue
 	fi
@@ -204,9 +213,9 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 		verity_part_uuid="${hash:32:8}-${hash:40:4}-${hash:44:4}-${hash:48:4}-${hash:52:12}"
 		echo -e "$part_uuid\t$type\t$size\t$syslinux\t$file\t$label" >> "$partitions"
 		echo -e "$verity_part_uuid\tlinux\t$verity_size\t0\t$verity_file" >> "$partitions"
-		make_repart_partition -g "$type" --def-only "$part_num" "$dracut_include"
+		make_repart_partition -g "$type" --def-only --weight 0 "$part_num" "$dracut_include"
 		part_num=$((part_num + 1))
-		make_repart_partition -g linux --def-only "$part_num" "$dracut_include"
+		make_repart_partition -g linux --def-only --weight 0 "$part_num" "$dracut_include"
 		if [[ "$depth" != 0 ]]; then
 			#shellcheck disable=SC2001
 			verity_name="verity$(sed 's|/|_|' <<< "$target")"
@@ -221,7 +230,13 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 		else
 			echo -e "$part_uuid\t$type\t$size\t$syslinux\t$file\t$label" >> "$partitions"
 		fi
-		make_repart_partition -g "$type" --def-only "$part_num" "$dracut_include"
+
+		if [ "$depth" = 0 ]; then
+			make_repart_partition -g "$type" --def-only --weight 1 "$part_num" "$dracut_include"
+		else
+			make_repart_partition -g "$type" --def-only --weight 0 "$part_num" "$dracut_include"
+		fi
+		
 		echo "$source" "$target" "$fs" "$options" "$dump" "$pass" >> "$fstab"
 	fi
 
@@ -234,21 +249,32 @@ rmdir "$bind_mounts"
 umount "$rootfs_work"
 rmdir "$rootfs_work"
 
-if [[ -n "$(find "$dracut_include/etc/repart.d/" -name "1.*.conf")" ]] || [[ -d "$dracut_include/etc/systemd/system-generators" ]] && [[ -n "$(find "$dracut_include/etc/systemd/system-generators" -name "repart-*")" ]]; then
+used_repart_disk=
+if [[ -n "$(find "$dracut_include/etc/repart.d/" -name "1.*.conf")" ]] || { [[ -d "$dracut_include/etc/systemd/system-generators" ]] && [[ -n "$(find "$dracut_include/etc/systemd/system-generators" -name "repart-*")" ]]; }; then
 	disk_uuid=$(echo "gardenlinux:$BUILDER_VERSION:disk_uuid" | uuid_hash)
 	make_repart_disk "$disk_uuid" "$dracut_include"
+	used_repart_disk=true
 fi
 
 read -r _ cmdline < "$rootfs/etc/kernel/cmdline" # hacky assumption that root= is always at start of kernel cmdline. TODO: find better way to handle this
+cmdline="rd.break systemd.journald.forward_to_console=1 $cmdline"
 if [[ -z "$(cat "$root_hash")" ]]; then
 	if [[ -z "$(cat "$root_repart")" ]]; then
 		root_source=$(tail -n 1 "$fstab" | cut -d " " -f 1)
 		cmdline="root=$root_source $cmdline"
 	fi
 
+	secureboot_flags=()
+	if [ -n "$(cat "$tpm_used")" ]; then
+		mkdir -p "$dracut_include/usr/lib/sysusers.d"
+		echo "u tss - \"TPM software stack\" /var/lib/tpm /bin/false" > "$dracut_include/usr/lib/sysusers.d/tpm2-tss.conf"
+
+		secureboot_flags+=("--tpm2")
+	fi
+
 	# enable verity if the root partition is writable, but any other partition has verity enabled, most likely /usr
-	if [ -n "$(cat "$veritytab")" ] && [ ! -s "$secureboot_partitions" ]; then
-		makesecureboot -r "$rootfs" -c "$cmdline" -v "$veritytab" -i "$dracut_include" -t "$BUILDER_TIMESTAMP" -s "false" < "$efi_partition"
+	if { [ -n "$(cat "$veritytab")" ] || [ -n "$used_repart_disk" ]; } && [ ! -s "$secureboot_partitions" ]; then
+		makesecureboot -r "$rootfs" -c "$cmdline" -v "$veritytab" -i "$dracut_include" -t "$BUILDER_TIMESTAMP" -s "false" "${secureboot_flags[@]}" < "$efi_partition"
 	fi
 else
 	cmdline="roothash=$(cat "$root_hash") root=/dev/mapper/root $cmdline"
@@ -265,5 +291,5 @@ fi
 cat "$partitions" "$final_partition" >&3
 
 # cleanup
-rm "$fstab" "$veritytab" "$root_hash" "$root_repart" "$partitions" "$final_partition" "$secureboot_partitions"
+rm "$fstab" "$veritytab" "$root_hash" "$root_repart" "$partitions" "$final_partition" "$secureboot_partitions" "$tpm_used"
 rm -rf "$dracut_include"
