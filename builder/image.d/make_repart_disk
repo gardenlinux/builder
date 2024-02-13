@@ -34,3 +34,10 @@ cat > "$target/etc/systemd/system/systemd-veritysetup@.service.d/override.conf" 
 [Unit]
 Before=systemd-repart.service
 EOF
+
+mkdir -p "$target/etc/systemd/system/systemd-pcrphase-initrd.service.d"
+cat > "$target/etc/systemd/system/systemd-pcrphase-initrd.service.d/override.conf" << EOF
+[Unit]
+After=sys-devices-platform-MSFT0101:00-tpm-tpm0.device
+Requires=sys-devices-platform-MSFT0101:00-tpm-tpm0.device
+EOF

@@ -79,7 +79,7 @@ chroot "$rootfs" env dracut \
 	--no-hostonly \
 	--force \
 	--kver "$kernel_version" \
-	--modules "bash dash systemd systemd-initrd systemd-veritysetup systemd-repart kernel-modules kernel-modules-extra terminfo udev-rules dracut-systemd base fs-lib shutdown crypt $tpm2" \
+	--modules "bash dash systemd systemd-initrd systemd-veritysetup systemd-repart kernel-modules kernel-modules-extra terminfo udev-rules dracut-systemd base fs-lib shutdown crypt systemd-pcrphase $tpm2" \
 	--install "/etc/veritytab cryptsetup head mkfs.ext4 systemd-escape lsblk" \
 	--include "$dracut_include" "/" \
 	--reproducible \
@@ -105,13 +105,35 @@ case "$BUILDER_ARCH" in
 		;;
 esac
 
+# pre-calculation PCR11 values
+unified_image_tmp="$(mktemp)"
+pcr_tmp="$(mktemp)"
+
+/usr/lib/systemd/ukify build \
+	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
+	--linux "$kernel_file" \
+	--initrd "$initrd" \
+	--cmdline "$cmdline" \
+	--output "$unified_image_tmp" \
+	--os-release "@$rootfs/etc/os-release" \
+	--pcr-banks "sha256" \
+	--measure > "$pcr_tmp"
+
+read -r pcr_value < "$pcr_tmp"
+pcr_value=$(echo $pcr_value | cut -d '=' -f2)
+
+rm $unified_image_tmp
+rm $pcr_tmp
+# ***
+
 # create unified image
 /usr/lib/systemd/ukify build \
 	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
 	--linux "$kernel_file" \
 	--initrd "$initrd" \
 	--cmdline "$cmdline" \
-	--output "$unified_image"
+	--output "$unified_image" \
+	--os-release "@$rootfs/etc/os-release"
 
 efi_dir="$(mktemp -d)"
 mkdir -p "$efi_dir/EFI/BOOT/"
