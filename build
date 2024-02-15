@@ -81,8 +81,8 @@ if [ "$container_image" = localhost/builder ]; then
 	# Build from 'builder.dockerfile' if that exists, otherwise the default file name will be 'Dockerfile' or 'Containerfile'.
 	# It is recommended to call the file 'builder.dockerfile' to make it's intention clear.
 	# That file might only contain a single line 'FROM ghcr.io/gardenlinux/builder:...' which can be updated via dependabot.
-	if [[ -f builder.dockerfile ]]; then
-		"$container_engine" build -t "$container_image" -f builder.dockerfile "$dir"
+	if [[ -f "${dir}"/builder.dockerfile ]]; then
+		"$container_engine" build -t "$container_image" -f "${dir}"/builder.dockerfile "$dir"
 	else 
 		"$container_engine" build -t "$container_image" "$dir"
 	fi
