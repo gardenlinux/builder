@@ -143,8 +143,8 @@ while read pcr_line; do
       trailing_comma=","
     fi
 
-		# Calculate the PCR policy digest
-		policy_init=$(printf '%0*d' 64 0)
+    # Calculate the PCR policy digest
+    policy_init=$(printf '%0*d' 64 0)
 
     command_code="0000017f"
     hash_alg_id="000B"
