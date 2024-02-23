@@ -105,9 +105,12 @@ case "$BUILDER_ARCH" in
 		;;
 esac
 
-# pre-calculation PCR11 values
+# pre-calculate PCR11 values
 unified_image_tmp="$(mktemp)"
 pcr_tmp="$(mktemp)"
+
+pcr_pub_key="/builder/cert/tpm2-pcr-public.pem"
+pcr_priv_key="/builder/cert/tpm2-pcr-private.pem"
 
 /usr/lib/systemd/ukify build \
 	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
@@ -116,15 +119,70 @@ pcr_tmp="$(mktemp)"
 	--cmdline "$cmdline" \
 	--output "$unified_image_tmp" \
 	--os-release "@$rootfs/etc/os-release" \
+	--pcrpkey "$pcr_pub_key" \
 	--pcr-banks "sha256" \
 	--measure > "$pcr_tmp"
 
-read -r pcr_value < "$pcr_tmp"
-pcr_value=$(echo $pcr_value | cut -d '=' -f2)
+# generate .pcrsig section
+pcr_sig="$(mktemp)"
 
-rm $unified_image_tmp
-rm $pcr_tmp
-# ***
+cat >> "$pcr_sig" << EOF
+{
+  "sha256" : [
+EOF
+
+pcr_counter=0
+while read pcr_line; do
+    # Split the string at the "="
+    IFS='=' read -ra PCR <<< $pcr_line
+    echo "${PCR[1]}"
+
+    if (( pcr_counter == 3 )); then
+      trailing_comma=""
+    else
+      trailing_comma=","
+    fi
+
+		# Calculate the PCR policy digest
+		policy_init=$(printf '%0*d' 64 0)
+
+    command_code="0000017f"
+    hash_alg_id="000B"
+
+    pcr_index="11"
+    pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
+
+    pcr_select_bit_map=("00" "00" "00")
+    pcr_select_bit_map[$((pcr_index / 8))]=$(printf "%02x" $((1 << pcr_index % 8)))
+
+    pcr_selection=$(printf "00000001%s03%s%s%s" "$hash_alg_id" "${pcr_select_bit_map[0]}" "${pcr_select_bit_map[1]}" "${pcr_select_bit_map[2]}")
+    policy="${policy_init}$command_code$pcr_selection$pcr_value_hash"
+
+    policy_digest=$(echo -n "$policy" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
+		# ***
+
+    cat >> "$pcr_sig" << EOF
+    {
+      "pcrs" : [
+        11
+      ],
+      "pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
+      "pol" : "$policy_digest",
+      "sig" : "$(echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 -sign "$pcr_priv_key" | openssl base64 -A)"
+    }$trailing_comma
+EOF
+
+	  pcr_counter=$((pcr_counter+1))
+
+    if (( pcr_counter == 4 )); then
+      break
+    fi
+done < $pcr_tmp
+
+cat >> "$pcr_sig" << EOF
+  ]
+}
+EOF
 
 # create unified image
 /usr/lib/systemd/ukify build \
@@ -133,7 +191,13 @@ rm $pcr_tmp
 	--initrd "$initrd" \
 	--cmdline "$cmdline" \
 	--output "$unified_image" \
-	--os-release "@$rootfs/etc/os-release"
+	--os-release "@$rootfs/etc/os-release" \
+	--pcrpkey "$pcr_pub_key" \
+	--section ".pcrsig:@$pcr_sig"
+
+rm $unified_image_tmp
+rm $pcr_tmp
+rm $pcr_sig
 
 efi_dir="$(mktemp -d)"
 mkdir -p "$efi_dir/EFI/BOOT/"
