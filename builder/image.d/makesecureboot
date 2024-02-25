@@ -128,59 +128,59 @@ pcr_sig="$(mktemp)"
 
 cat >> "$pcr_sig" << EOF
 {
-  "sha256" : [
+	"sha256" : [
 EOF
 
 pcr_counter=0
 while read pcr_line; do
-    # Split the string at the "="
-    IFS='=' read -ra PCR <<< $pcr_line
-    echo "${PCR[1]}"
+	# Split the string at the "="
+	IFS='=' read -ra PCR <<< $pcr_line
+	echo "${PCR[1]}"
 
-    if (( pcr_counter == 3 )); then
-      trailing_comma=""
-    else
-      trailing_comma=","
-    fi
+	if (( pcr_counter == 3 )); then
+		trailing_comma=""
+	else
+		trailing_comma=","
+	fi
 
-    # Calculate the PCR policy digest
-    policy_init=$(printf '%0*d' 64 0)
+	# Calculate the PCR policy digest
+	policy_init=$(printf '%0*d' 64 0)
 
-    command_code="0000017f"
-    hash_alg_id="000B"
+	command_code="0000017f"
+	hash_alg_id="000B"
 
-    pcr_index="11"
-    pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
+	pcr_index="11"
+	pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
 
-    pcr_select_bit_map=("00" "00" "00")
-    pcr_select_bit_map[$((pcr_index / 8))]=$(printf "%02x" $((1 << pcr_index % 8)))
+	pcr_select_bit_map=("00" "00" "00")
+	pcr_select_bit_map[$((pcr_index / 8))]=$(printf "%02x" $((1 << pcr_index % 8)))
 
-    pcr_selection=$(printf "00000001%s03%s%s%s" "$hash_alg_id" "${pcr_select_bit_map[0]}" "${pcr_select_bit_map[1]}" "${pcr_select_bit_map[2]}")
-    policy="${policy_init}$command_code$pcr_selection$pcr_value_hash"
+	pcr_selection=$(printf "00000001%s03%s%s%s" "$hash_alg_id" "${pcr_select_bit_map[0]}" "${pcr_select_bit_map[1]}" "${pcr_select_bit_map[2]}")
+	policy="${policy_init}$command_code$pcr_selection$pcr_value_hash"
 
-    policy_digest=$(echo -n "$policy" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
-		# ***
+	policy_digest=$(echo -n "$policy" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
+	# ***
 
-    cat >> "$pcr_sig" << EOF
-    {
-      "pcrs" : [
-        11
-      ],
-      "pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
-      "pol" : "$policy_digest",
-      "sig" : "$(echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 -sign "$pcr_priv_key" | openssl base64 -A)"
-    }$trailing_comma
+	cat >> "$pcr_sig" << EOF
+		{
+			"pcrs" : [
+				11
+			],
+			"pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
+			"pol" : "$policy_digest",
+			"sig" : "$(echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 -sign "$pcr_priv_key" | openssl base64 -A)"
+		}$trailing_comma
 EOF
 
-	  pcr_counter=$((pcr_counter+1))
+	pcr_counter=$((pcr_counter+1))
 
-    if (( pcr_counter == 4 )); then
-      break
-    fi
+	if (( pcr_counter == 4 )); then
+		break
+	fi
 done < $pcr_tmp
 
 cat >> "$pcr_sig" << EOF
-  ]
+	]
 }
 EOF
 
