@@ -149,7 +149,7 @@ while read pcr_line; do
 	policy_init=$(printf '%0*d' 64 0)
 
 	command_code="0000017f"
-	hash_alg_id="000B"
+	hash_alg_id="000b"
 	pcr_index="11"
 	
 	pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
