@@ -105,14 +105,13 @@ case "$BUILDER_ARCH" in
 		;;
 esac
 
-# pre-calculate PCR11 values
 unified_image_tmp="$(mktemp)"
 pcr_tmp="$(mktemp)"
 
 pcr_pub_key="/builder/cert/tpm2-pcr-public.pem"
 pcr_priv_key="/builder/cert/tpm2-pcr-private.pem"
 
-# TODO: replace ukify with systemd-measure
+# pre-calculate PCR11 values
 /usr/lib/systemd/ukify build \
 	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
 	--linux "$kernel_file" \
@@ -123,8 +122,11 @@ pcr_priv_key="/builder/cert/tpm2-pcr-private.pem"
 	--pcrpkey "$pcr_pub_key" \
 	--pcr-banks "sha256" \
 	--measure > "$pcr_tmp"
+	# TODO: replace ukify with systemd-measure
 
 # generate .pcrsig section
+# [1]: https://uapi-group.org/specifications/specs/unified_kernel_image/
+# [2]: https://www.freedesktop.org/software/systemd/man/latest/systemd-measure.html#sign
 pcr_sig="$(mktemp)"
 
 cat >> "$pcr_sig" << EOF
@@ -132,15 +134,16 @@ cat >> "$pcr_sig" << EOF
 	"sha256" : [
 EOF
 
+# loop through all calculated PCR values (depending on boot phase)
+# and generate valid JSON according to specifications
 pcr_counter=0
 while read pcr_line; do
-	# Split the string at the "="
 	IFS='=' read -ra PCR <<< $pcr_line
 	echo "${PCR[1]}"
 
 	trailing_comma=$( [[ pcr_counter -eq 3 ]] && echo "" || echo "," )
 
-	# Calculate the PCR policy digest
+	# calculate the PCR policy digest
 	# [1]: https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_policypcr.1.md
 	# [2]: https://github.com/fishilico/shared/blob/master/python/crypto/tpm_ea_policy.py#L646
 	# [3]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part3_Commands_pub.pdf#page=244
@@ -183,7 +186,7 @@ cat >> "$pcr_sig" << EOF
 }
 EOF
 
-# create unified image
+# create unified image and append generated .pcrsig section
 /usr/lib/systemd/ukify build \
 	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
 	--linux "$kernel_file" \
