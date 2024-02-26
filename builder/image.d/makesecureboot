@@ -151,12 +151,12 @@ while read pcr_line; do
 	command_code="0000017f"
 	hash_alg_id="000b"
 	pcr_index="11"
-	
+
 	pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
 
 	pcr_select_bit_map=("00" "00" "00")
 	pcr_select_bit_map[$((pcr_index / 8))]=$(printf "%02x" $((1 << pcr_index % 8)))
-	
+
 	pcr_selection=$(printf "00000001%s03%s%s%s" "$hash_alg_id" "${pcr_select_bit_map[0]}" "${pcr_select_bit_map[1]}" "${pcr_select_bit_map[2]}")
 
 	policy="${policy_init}${command_code}${pcr_selection}${pcr_value_hash}"
