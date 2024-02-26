@@ -112,6 +112,7 @@ pcr_tmp="$(mktemp)"
 pcr_pub_key="/builder/cert/tpm2-pcr-public.pem"
 pcr_priv_key="/builder/cert/tpm2-pcr-private.pem"
 
+# TODO: replace ukify with systemd-measure
 /usr/lib/systemd/ukify build \
 	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
 	--linux "$kernel_file" \
@@ -137,29 +138,29 @@ while read pcr_line; do
 	IFS='=' read -ra PCR <<< $pcr_line
 	echo "${PCR[1]}"
 
-	if (( pcr_counter == 3 )); then
-		trailing_comma=""
-	else
-		trailing_comma=","
-	fi
+	trailing_comma=$( [[ pcr_counter -eq 3 ]] && echo "" || echo "," )
 
 	# Calculate the PCR policy digest
+	# [1]: https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_policypcr.1.md
+	# [2]: https://github.com/fishilico/shared/blob/master/python/crypto/tpm_ea_policy.py#L646
+	# [3]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part3_Commands_pub.pdf#page=244
+	# [4]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part1_Architecture_pub.pdf#page=113
+
 	policy_init=$(printf '%0*d' 64 0)
 
 	command_code="0000017f"
 	hash_alg_id="000B"
-
 	pcr_index="11"
+	
 	pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
 
 	pcr_select_bit_map=("00" "00" "00")
 	pcr_select_bit_map[$((pcr_index / 8))]=$(printf "%02x" $((1 << pcr_index % 8)))
-
+	
 	pcr_selection=$(printf "00000001%s03%s%s%s" "$hash_alg_id" "${pcr_select_bit_map[0]}" "${pcr_select_bit_map[1]}" "${pcr_select_bit_map[2]}")
-	policy="${policy_init}$command_code$pcr_selection$pcr_value_hash"
 
+	policy="${policy_init}${command_code}${pcr_selection}${pcr_value_hash}"
 	policy_digest=$(echo -n "$policy" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
-	# ***
 
 	cat >> "$pcr_sig" << EOF
 		{
@@ -173,10 +174,8 @@ while read pcr_line; do
 EOF
 
 	pcr_counter=$((pcr_counter+1))
-
-	if (( pcr_counter == 4 )); then
-		break
-	fi
+	[[ $pcr_counter -eq 4 ]] && break
+	
 done < $pcr_tmp
 
 cat >> "$pcr_sig" << EOF
