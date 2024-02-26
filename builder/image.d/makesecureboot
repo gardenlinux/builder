@@ -148,7 +148,6 @@ while read pcr_line; do
 	# [2]: https://github.com/fishilico/shared/blob/master/python/crypto/tpm_ea_policy.py#L646
 	# [3]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part3_Commands_pub.pdf#page=244
 	# [4]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part1_Architecture_pub.pdf#page=113
-
 	policy_init=$(printf '%0*d' 64 0)
 
 	command_code="0000017f"
