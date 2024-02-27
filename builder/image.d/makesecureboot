@@ -105,118 +105,133 @@ case "$BUILDER_ARCH" in
 		;;
 esac
 
-unified_image_tmp="$(mktemp)"
-pcr_tmp="$(mktemp)"
+if [[ "$secureboot" = "true" ]] || [[ -n "$tpm2" ]]; then
+	if [ -f "$cert_base.key" ]; then
+		sbs_key_params=(--key "$cert_base.key")
+		pcr_key_params=(-sign "$cert_base.key")
+	elif [ -f "$cert_base.arn" ]; then
+		PKCS11_MODULE_PATH="/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
+		PKCS11_ARN="pkcs11:token=$(basename "$(cat "$cert_base.arn")" | cut -c -32)"
+		export PKCS11_MODULE_PATH
+		sbs_key_params=(--engine pkcs11 --key $PKCS11_ARN)
+		pcr_key_params=(-keyform engine -engine pkcs11 -sign $PKCS11_ARN)
+	else
+		echo "neither $cert_base.key nor $cert_base.arn exists, but at least one is required" >&2
+		exit 1
+	fi
+fi
 
-pcr_pub_key="/builder/cert/tpm2-pcr-public.pem"
-pcr_priv_key="/builder/cert/tpm2-pcr-private.pem"
+if [[ -n "$tpm2" ]]; then
+	unified_image_tmp="$(mktemp)"
+	pcr_tmp="$(mktemp)"
 
-# pre-calculate PCR11 values
-/usr/lib/systemd/ukify build \
-	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
-	--linux "$kernel_file" \
-	--initrd "$initrd" \
-	--cmdline "$cmdline" \
-	--output "$unified_image_tmp" \
-	--os-release "@$rootfs/etc/os-release" \
-	--pcrpkey "$pcr_pub_key" \
-	--pcr-banks "sha256" \
-	--measure > "$pcr_tmp"
-	# TODO: replace ukify with systemd-measure
+	pcr_pub_key="$(mktemp)"
+	openssl x509 -pubkey -noout -in "$cert_base.crt" > $pcr_pub_key
 
-# generate .pcrsig section
-# [1]: https://uapi-group.org/specifications/specs/unified_kernel_image/
-# [2]: https://www.freedesktop.org/software/systemd/man/latest/systemd-measure.html#sign
-pcr_sig="$(mktemp)"
+	# pre-calculate PCR11 values
+	/usr/lib/systemd/ukify build \
+		--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
+		--linux "$kernel_file" \
+		--initrd "$initrd" \
+		--cmdline "$cmdline" \
+		--output "$unified_image_tmp" \
+		--os-release "@$rootfs/etc/os-release" \
+		--pcrpkey "$pcr_pub_key" \
+		--pcr-banks "sha256" \
+		--measure > "$pcr_tmp"
+		# TODO: replace ukify with systemd-measure
 
-cat >> "$pcr_sig" << EOF
-{
-	"sha256" : [
-EOF
-
-# loop through all calculated PCR values (depending on boot phase)
-# and generate valid JSON according to specifications
-pcr_counter=0
-while read pcr_line; do
-	IFS='=' read -ra PCR <<< $pcr_line
-	echo "${PCR[1]}"
-
-	trailing_comma=$( [[ pcr_counter -eq 3 ]] && echo "" || echo "," )
-
-	# calculate the PCR policy digest
-	# [1]: https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_policypcr.1.md
-	# [2]: https://github.com/fishilico/shared/blob/master/python/crypto/tpm_ea_policy.py#L646
-	# [3]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part3_Commands_pub.pdf#page=244
-	# [4]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part1_Architecture_pub.pdf#page=113
-	policy_init=$(printf '%0*d' 64 0)
-
-	command_code="0000017f"
-	hash_alg_id="000b"
-	pcr_index="11"
-
-	pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
-
-	pcr_select_bit_map=("00" "00" "00")
-	pcr_select_bit_map[$((pcr_index / 8))]=$(printf "%02x" $((1 << pcr_index % 8)))
-
-	pcr_selection=$(printf "00000001%s03%s%s%s" "$hash_alg_id" "${pcr_select_bit_map[0]}" "${pcr_select_bit_map[1]}" "${pcr_select_bit_map[2]}")
-
-	policy="${policy_init}${command_code}${pcr_selection}${pcr_value_hash}"
-	policy_digest=$(echo -n "$policy" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
+	# generate .pcrsig section
+	# [1]: https://uapi-group.org/specifications/specs/unified_kernel_image/
+	# [2]: https://www.freedesktop.org/software/systemd/man/latest/systemd-measure.html#sign
+	pcr_sig="$(mktemp)"
 
 	cat >> "$pcr_sig" << EOF
-		{
-			"pcrs" : [
-				11
-			],
-			"pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
-			"pol" : "$policy_digest",
-			"sig" : "$(echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 -sign "$pcr_priv_key" | openssl base64 -A)"
-		}$trailing_comma
+	{
+		"sha256" : [
 EOF
 
-	pcr_counter=$((pcr_counter+1))
-	[[ $pcr_counter -eq 4 ]] && break
-	
-done < $pcr_tmp
+	# loop through all calculated PCR values (depending on boot phase)
+	# and generate valid JSON according to specifications
+	pcr_counter=0
+	while read pcr_line; do
+		IFS='=' read -ra PCR <<< $pcr_line
+		echo "${PCR[1]}"
 
-cat >> "$pcr_sig" << EOF
-	]
-}
+		trailing_comma=$( [[ pcr_counter -eq 3 ]] && echo "" || echo "," )
+
+		# calculate the PCR policy digest
+		# [1]: https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_policypcr.1.md
+		# [2]: https://github.com/fishilico/shared/blob/master/python/crypto/tpm_ea_policy.py#L646
+		# [3]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part3_Commands_pub.pdf#page=244
+		# [4]: https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part1_Architecture_pub.pdf#page=113
+		policy_init=$(printf '%0*d' 64 0)
+
+		command_code="0000017f"
+		hash_alg_id="000b"
+		pcr_index="11"
+
+		pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
+
+		pcr_select_bit_map=("00" "00" "00")
+		pcr_select_bit_map[$((pcr_index / 8))]=$(printf "%02x" $((1 << pcr_index % 8)))
+
+		pcr_selection=$(printf "00000001%s03%s%s%s" "$hash_alg_id" "${pcr_select_bit_map[0]}" "${pcr_select_bit_map[1]}" "${pcr_select_bit_map[2]}")
+
+		policy="${policy_init}${command_code}${pcr_selection}${pcr_value_hash}"
+		policy_digest=$(echo -n "$policy" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
+
+		cat >> "$pcr_sig" << EOF
+			{
+				"pcrs" : [
+					11
+				],
+				"pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
+				"pol" : "$policy_digest",
+				"sig" : "$(echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 "${pcr_key_params[@]}" | openssl base64 -A)"
+			}$trailing_comma
 EOF
 
-# create unified image and append generated .pcrsig section
-/usr/lib/systemd/ukify build \
+		pcr_counter=$((pcr_counter+1))
+		[[ $pcr_counter -eq 4 ]] && break
+		
+	done < $pcr_tmp
+
+	cat >> "$pcr_sig" << EOF
+		]
+	}
+EOF
+
+	# create unified image and append generated .pcrsig section
+	/usr/lib/systemd/ukify build \
+		--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
+		--linux "$kernel_file" \
+		--initrd "$initrd" \
+		--cmdline "$cmdline" \
+		--output "$unified_image" \
+		--os-release "@$rootfs/etc/os-release" \
+		--pcrpkey "$pcr_pub_key" \
+		--section ".pcrsig:@$pcr_sig"
+
+	rm $unified_image_tmp
+	rm $pcr_tmp
+	rm $pcr_sig
+else
+	/usr/lib/systemd/ukify build \
 	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
 	--linux "$kernel_file" \
 	--initrd "$initrd" \
 	--cmdline "$cmdline" \
 	--output "$unified_image" \
-	--os-release "@$rootfs/etc/os-release" \
-	--pcrpkey "$pcr_pub_key" \
-	--section ".pcrsig:@$pcr_sig"
-
-rm $unified_image_tmp
-rm $pcr_tmp
-rm $pcr_sig
+	--os-release "@$rootfs/etc/os-release"
+fi
 
 efi_dir="$(mktemp -d)"
 mkdir -p "$efi_dir/EFI/BOOT/"
 
 if [[ "$secureboot" = "true" ]]; then
-	if [ -f "$cert_base.key" ]; then
-		key_params=(--key "$cert_base.key")
-	elif [ -f "$cert_base.arn" ]; then
-		PKCS11_MODULE_PATH="/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
-		export PKCS11_MODULE_PATH
-		key_params=(--engine pkcs11 --key "pkcs11:token=$(basename "$(cat "$cert_base.arn")" | cut -c -32)")
-	else
-		echo "neither $cert_base.key nor $cert_base.arn exists, but at least one is required" >&2
-		exit 1
-	fi
-
 	# sign unified image
-	datefudge -s "@$timestamp" sbsign --cert "$cert_base.crt" "${key_params[@]}" --output "$unified_image_signed" "$unified_image"
+	datefudge -s "@$timestamp" sbsign --cert "$cert_base.crt" "${sbs_key_params[@]}" --output "$unified_image_signed" "$unified_image"
 	rm "$unified_image"
 
 	ls -lah "$unified_image_signed"
