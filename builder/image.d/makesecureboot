@@ -114,23 +114,19 @@ case "$BUILDER_ARCH" in
 		;;
 esac
 
-if [[ "$secureboot" = "true" ]] || [[ -n "$tpm2" ]]; then
-	if [ -f "$cert_base.key" ]; then
-		sbs_key_params=(--key "$cert_base.key")
-		pcr_key_params=(-sign "$cert_base.key")
-	elif [ -f "$cert_base.arn" ]; then
-		PKCS11_MODULE_PATH="/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
-		export PKCS11_MODULE_PATH
-		
-		sbs_key_params=(--engine pkcs11 --key "pkcs11:token=$(basename "$(cat "$cert_base.arn")" | cut -c -32)")
-		pcr_key_params=(-keyform engine -engine pkcs11 -sign "pkcs11:token=$(basename "$(cat "$tpm_sign_base.arn")" | cut -c -32)")
-	else
-		echo "neither $cert_base.key nor $cert_base.arn exists, but at least one is required" >&2
-		exit 1
-	fi
-fi
+PKCS11_MODULE_PATH="/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
+export PKCS11_MODULE_PATH
 
 if [[ -n "$tpm2" ]]; then
+	if [ -f "$tpm_sign_base.key" ]; then
+		pcr_key_params=(-sign "$tpm_sign_base.key")
+	elif [ -f "$tpm_sign_base.arn" ]; then
+		pcr_key_params=(-keyform engine -engine pkcs11 -sign "pkcs11:token=$(basename "$(cat "$tpm_sign_base.arn")" | cut -c -32)")
+	else
+		echo "neither $tpm_sign_base.key nor $tpm_sign_base.arn exists, but at least one is required" >&2
+		exit 1
+	fi
+
 	unified_image_tmp="$(mktemp)"
 	pcr_tmp="$(mktemp)"
 
@@ -230,6 +226,7 @@ EOF
 	rm $unified_image_tmp
 	rm $pcr_tmp
 	rm $pcr_sig
+	rm $pcr_pub_key
 else
 	/usr/lib/systemd/ukify build \
 	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
@@ -244,6 +241,15 @@ efi_dir="$(mktemp -d)"
 mkdir -p "$efi_dir/EFI/BOOT/"
 
 if [[ "$secureboot" = "true" ]]; then
+	if [ -f "$cert_base.key" ]; then
+		sbs_key_params=(--key "$cert_base.key")
+	elif [ -f "$cert_base.arn" ]; then
+		sbs_key_params=(--engine pkcs11 --key "pkcs11:token=$(basename "$(cat "$cert_base.arn")" | cut -c -32)")
+	else
+		echo "neither $cert_base.key nor $cert_base.arn exists, but at least one is required" >&2
+		exit 1
+	fi
+
 	# sign unified image
 	datefudge -s "@$timestamp" sbsign --cert "$cert_base.crt" "${sbs_key_params[@]}" --output "$unified_image_signed" "$unified_image"
 	rm "$unified_image"
