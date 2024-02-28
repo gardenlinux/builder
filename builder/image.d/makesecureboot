@@ -4,6 +4,7 @@ set -Eeufo pipefail
 
 veritytab=
 cert_base="/builder/cert/secureboot.db"
+tpm_sign_base="/builder/cert/tpm-sign"
 timestamp=0
 secureboot="true"
 dracut_include=
@@ -42,6 +43,14 @@ while [ $# -gt 0 ]; do
 		--tpm2)
 			tpm2="tpm2-tss"
 			shift
+			;;
+		--tpm-sign)
+			tpm_sign_base="${2%.crt}"
+			if [ -n "$tpm_sign_base" ] && [ "$tpm_sign_base.crt" != "$2" ]; then
+				echo "cert file must end in .crt" >&2
+				exit 1
+			fi
+			shift 2
 			;;
 		-i|--include)
 			dracut_include="$2"
@@ -111,10 +120,10 @@ if [[ "$secureboot" = "true" ]] || [[ -n "$tpm2" ]]; then
 		pcr_key_params=(-sign "$cert_base.key")
 	elif [ -f "$cert_base.arn" ]; then
 		PKCS11_MODULE_PATH="/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
-		PKCS11_ARN="pkcs11:token=$(basename "$(cat "$cert_base.arn")" | cut -c -32)"
 		export PKCS11_MODULE_PATH
-		sbs_key_params=(--engine pkcs11 --key $PKCS11_ARN)
-		pcr_key_params=(-keyform engine -engine pkcs11 -sign $PKCS11_ARN)
+		
+		sbs_key_params=(--engine pkcs11 --key "pkcs11:token=$(basename "$(cat "$cert_base.arn")" | cut -c -32)")
+		pcr_key_params=(-keyform engine -engine pkcs11 -sign "pkcs11:token=$(basename "$(cat "$tpm_sign_base.arn")" | cut -c -32)")
 	else
 		echo "neither $cert_base.key nor $cert_base.arn exists, but at least one is required" >&2
 		exit 1
@@ -126,7 +135,7 @@ if [[ -n "$tpm2" ]]; then
 	pcr_tmp="$(mktemp)"
 
 	pcr_pub_key="$(mktemp)"
-	openssl x509 -pubkey -noout -in "$cert_base.crt" > $pcr_pub_key
+	openssl x509 -pubkey -noout -in "$tpm_sign_base.crt" > $pcr_pub_key
 
 	# pre-calculate PCR11 values
 	/usr/lib/systemd/ukify build \
@@ -147,8 +156,8 @@ if [[ -n "$tpm2" ]]; then
 	pcr_sig="$(mktemp)"
 
 	cat >> "$pcr_sig" << EOF
-	{
-		"sha256" : [
+{
+	"sha256" : [
 EOF
 
 	# loop through all calculated PCR values (depending on boot phase)
@@ -181,15 +190,20 @@ EOF
 		policy="${policy_init}${command_code}${pcr_selection}${pcr_value_hash}"
 		policy_digest=$(echo -n "$policy" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
 
+		# calculate and verify the PCR signature
+		pcr_signature=$(mktemp)
+		echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 "${pcr_key_params[@]}" -out $pcr_signature
+		echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 -verify $pcr_pub_key -signature $pcr_signature
+
 		cat >> "$pcr_sig" << EOF
-			{
-				"pcrs" : [
-					11
-				],
-				"pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
-				"pol" : "$policy_digest",
-				"sig" : "$(echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 "${pcr_key_params[@]}" | openssl base64 -A)"
-			}$trailing_comma
+		{
+			"pcrs" : [
+				11
+			],
+			"pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
+			"pol" : "$policy_digest",
+			"sig" : "$(cat $pcr_signature | openssl base64 -A)"
+		}$trailing_comma
 EOF
 
 		pcr_counter=$((pcr_counter+1))
@@ -198,8 +212,8 @@ EOF
 	done < $pcr_tmp
 
 	cat >> "$pcr_sig" << EOF
-		]
-	}
+	]
+}
 EOF
 
 	# create unified image and append generated .pcrsig section
