@@ -24,7 +24,7 @@ partitions="$(mktemp)"
 final_partition="$(mktemp)"
 secureboot_partitions="$(mktemp)"
 efi_partition="$(mktemp)"
-tpm_used="$(mktemp)"
+tpm2_used="$(mktemp)"
 
 part_num=0
 
@@ -103,7 +103,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 	fi
 
 	if [[ "$tpm2" = 1 ]]; then
-		echo 1 > "$tpm_used"
+		echo 1 > "$tpm2_used"
 	fi
 
 	if [[ "$depth" = 0 ]]; then
@@ -265,9 +265,9 @@ if [[ -z "$(cat "$root_hash")" ]]; then
 	fi
 
 	secureboot_flags=()
-	if [ -n "$(cat "$tpm_used")" ]; then
+	if [ -n "$(cat "$tpm2_used")" ]; then
 		mkdir -p "$dracut_include/usr/lib/sysusers.d"
-		echo "u tss - \"TPM software stack\" /var/lib/tpm /bin/false" > "$dracut_include/usr/lib/sysusers.d/tpm2-tss.conf"
+		echo "u tss - \"TPM2 software stack\" /var/lib/tpm /bin/false" > "$dracut_include/usr/lib/sysusers.d/tpm2-tss.conf"
 
 		secureboot_flags+=("--tpm2")
 	fi
@@ -291,5 +291,5 @@ fi
 cat "$partitions" "$final_partition" >&3
 
 # cleanup
-rm "$fstab" "$veritytab" "$root_hash" "$root_repart" "$partitions" "$final_partition" "$secureboot_partitions" "$tpm_used"
+rm "$fstab" "$veritytab" "$root_hash" "$root_repart" "$partitions" "$final_partition" "$secureboot_partitions" "$tpm2_used"
 rm -rf "$dracut_include"

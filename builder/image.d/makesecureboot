@@ -4,7 +4,7 @@ set -Eeufo pipefail
 
 veritytab=
 cert_base="/builder/cert/secureboot.db"
-tpm_sign_base="/builder/cert/tpm-sign"
+tpm2_sign_base="/builder/cert/tpm-sign"
 timestamp=0
 secureboot="true"
 dracut_include=
@@ -44,9 +44,9 @@ while [ $# -gt 0 ]; do
 			tpm2="tpm2-tss"
 			shift
 			;;
-		--tpm-sign)
-			tpm_sign_base="${2%.crt}"
-			if [ -n "$tpm_sign_base" ] && [ "$tpm_sign_base.crt" != "$2" ]; then
+		--tpm2-sign)
+			tpm2_sign_base="${2%.crt}"
+			if [ -n "$tpm2_sign_base" ] && [ "$tpm2_sign_base.crt" != "$2" ]; then
 				echo "cert file must end in .crt" >&2
 				exit 1
 			fi
@@ -118,12 +118,12 @@ PKCS11_MODULE_PATH="/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
 export PKCS11_MODULE_PATH
 
 if [[ -n "$tpm2" ]]; then
-	if [ -f "$tpm_sign_base.key" ]; then
-		pcr_key_params=(-sign "$tpm_sign_base.key")
-	elif [ -f "$tpm_sign_base.arn" ]; then
-		pcr_key_params=(-keyform engine -engine pkcs11 -sign "pkcs11:token=$(basename "$(cat "$tpm_sign_base.arn")" | cut -c -32)")
+	if [ -f "$tpm2_sign_base.key" ]; then
+		pcr_key_params=(-sign "$tpm2_sign_base.key")
+	elif [ -f "$tpm2_sign_base.arn" ]; then
+		pcr_key_params=(-keyform engine -engine pkcs11 -sign "pkcs11:token=$(basename "$(cat "$tpm2_sign_base.arn")" | cut -c -32)")
 	else
-		echo "neither $tpm_sign_base.key nor $tpm_sign_base.arn exists, but at least one is required" >&2
+		echo "neither $tpm2_sign_base.key nor $tpm2_sign_base.arn exists, but at least one is required" >&2
 		exit 1
 	fi
 
@@ -131,7 +131,7 @@ if [[ -n "$tpm2" ]]; then
 	pcr_tmp="$(mktemp)"
 
 	pcr_pub_key="$(mktemp)"
-	openssl x509 -pubkey -noout -in "$tpm_sign_base.crt" > $pcr_pub_key
+	openssl x509 -pubkey -noout -in "$tpm2_sign_base.crt" > $pcr_pub_key
 
 	# pre-calculate PCR11 values
 	/usr/lib/systemd/ukify build \
