@@ -8,7 +8,6 @@ from functools import reduce
 from glob import glob
 import yaml
 import networkx
-import matplotlib.pyplot as plt
 
 
 def main():
@@ -112,9 +111,20 @@ def main():
 	elif args.type == "flags":
 		print(",".join(features_by_type["flag"]))
 	elif args.type == "graph":
-		networkx.draw(graph, with_labels = True)
-		plt.savefig(f"{cname_base}.png")
-		print(graph)
+		print(graph_as_mermaid_markup(cname_base, graph))
+
+def graph_as_mermaid_markup(cname_base, graph):
+	"""
+	Generates a mermaid.js representation of the graph.
+	This is helpful to identify dependencies between features.
+
+	Syntax docs:
+	https://mermaid.js.org/syntax/flowchart.html?id=flowcharts-basic-syntax
+	"""
+	markup = f"---\ntitle: Dependency Graph for Feature {cname_base}\n---\ngraph TD;\n"
+	for u,v in networkx.edges(graph):
+		markup += f"    {u}-->{v};\n"
+	return markup
 
 def get_local_bin(name):
 	directory = os.path.dirname(os.path.realpath(__file__))
