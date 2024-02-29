@@ -32,7 +32,7 @@ def main():
 		"elements",
 		"arch",
 		"version",
-        "graph"
+		"graph"
 	]
 
 	parser.add_argument("type", nargs="?", choices=args_type_allowed, default="cname")
@@ -113,7 +113,7 @@ def main():
 		print(",".join(features_by_type["flag"]))
 	elif args.type == "graph":
 		networkx.draw(graph, with_labels = True)
-		plt.savefig('features.png')
+		plt.savefig(f"{cname_base}.png")
 		print(graph)
 
 def get_local_bin(name):
