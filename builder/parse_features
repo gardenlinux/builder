@@ -9,7 +9,6 @@ from glob import glob
 import yaml
 import networkx
 
-
 def main():
 	parser = argparse.ArgumentParser()
 
