@@ -8,6 +8,8 @@ from functools import reduce
 from glob import glob
 import yaml
 import networkx
+import matplotlib.pyplot as plt
+
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -29,7 +31,8 @@ def main():
 		"flags",
 		"elements",
 		"arch",
-		"version"
+		"version",
+        "graph"
 	]
 
 	parser.add_argument("type", nargs="?", choices=args_type_allowed, default="cname")
@@ -108,6 +111,10 @@ def main():
 		print(",".join(features_by_type["element"]))
 	elif args.type == "flags":
 		print(",".join(features_by_type["flag"]))
+	elif args.type == "graph":
+		networkx.draw(graph, with_labels = True)
+		plt.savefig('features.png')
+		print(graph)
 
 def get_local_bin(name):
 	directory = os.path.dirname(os.path.realpath(__file__))
