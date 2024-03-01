@@ -131,7 +131,7 @@ if [[ -n "$tpm2" ]]; then
 	pcr_tmp="$(mktemp)"
 
 	pcr_pub_key="$(mktemp)"
-	openssl x509 -pubkey -noout -in "$tpm2_sign_base.crt" > $pcr_pub_key
+	openssl x509 -pubkey -noout -in "$tpm2_sign_base.crt" > "$pcr_pub_key"
 
 	# pre-calculate PCR11 values
 	/usr/lib/systemd/ukify build \
@@ -159,8 +159,8 @@ EOF
 	# loop through all calculated PCR values (depending on boot phase)
 	# and generate valid JSON according to specifications
 	pcr_counter=0
-	while read pcr_line; do
-		IFS='=' read -ra PCR <<< $pcr_line
+	while read -r pcr_line; do
+		IFS='=' read -ra PCR <<< "$pcr_line"
 		echo "${PCR[1]}"
 
 		trailing_comma=$( [[ pcr_counter -eq 3 ]] && echo "" || echo "," )
@@ -179,7 +179,7 @@ EOF
 		pcr_value_hash=$(echo -n "${PCR[1]}" | xxd -r -p | openssl dgst -sha256 -binary | xxd -p -c 256)
 
 		pcr_select_bit_map=("00" "00" "00")
-		pcr_select_bit_map[$((pcr_index / 8))]=$(printf "%02x" $((1 << pcr_index % 8)))
+		pcr_select_bit_map[pcr_index / 8]=$(printf "%02x" $((1 << pcr_index % 8)))
 
 		pcr_selection=$(printf "00000001%s03%s%s%s" "$hash_alg_id" "${pcr_select_bit_map[0]}" "${pcr_select_bit_map[1]}" "${pcr_select_bit_map[2]}")
 
@@ -188,8 +188,8 @@ EOF
 
 		# calculate and verify the PCR signature
 		pcr_signature=$(mktemp)
-		echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 "${pcr_key_params[@]}" -out $pcr_signature
-		echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 -verify $pcr_pub_key -signature $pcr_signature
+		echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 "${pcr_key_params[@]}" -out "$pcr_signature"
+		echo -n "$policy_digest" | xxd -r -p | openssl dgst -sha256 -verify "$pcr_pub_key" -signature "$pcr_signature"
 
 		cat >> "$pcr_sig" << EOF
 		{
@@ -198,14 +198,14 @@ EOF
 			],
 			"pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
 			"pol" : "$policy_digest",
-			"sig" : "$(cat $pcr_signature | openssl base64 -A)"
+			"sig" : "$(cat "$pcr_signature" | openssl base64 -A)"
 		}$trailing_comma
 EOF
 
 		pcr_counter=$((pcr_counter+1))
 		[[ $pcr_counter -eq 4 ]] && break
 		
-	done < $pcr_tmp
+	done < "$pcr_tmp"
 
 	cat >> "$pcr_sig" << EOF
 	]
@@ -223,10 +223,10 @@ EOF
 		--pcrpkey "$pcr_pub_key" \
 		--section ".pcrsig:@$pcr_sig"
 
-	rm $unified_image_tmp
-	rm $pcr_tmp
-	rm $pcr_sig
-	rm $pcr_pub_key
+	rm "$unified_image_tmp"
+	rm "$pcr_tmp"
+	rm "$pcr_sig"
+	rm "$pcr_pub_key"
 else
 	/usr/lib/systemd/ukify build \
 	--stub "$rootfs/usr/lib/systemd/boot/efi/linux$(tr '[:upper:]' '[:lower:]' <<< "$uefi_arch").efi.stub" \
