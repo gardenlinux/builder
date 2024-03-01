@@ -29,7 +29,8 @@ def main():
 		"flags",
 		"elements",
 		"arch",
-		"version"
+		"version",
+		"graph"
 	]
 
 	parser.add_argument("type", nargs="?", choices=args_type_allowed, default="cname")
@@ -108,6 +109,21 @@ def main():
 		print(",".join(features_by_type["element"]))
 	elif args.type == "flags":
 		print(",".join(features_by_type["flag"]))
+	elif args.type == "graph":
+		print(graph_as_mermaid_markup(cname_base, graph))
+
+def graph_as_mermaid_markup(cname_base, graph):
+	"""
+	Generates a mermaid.js representation of the graph.
+	This is helpful to identify dependencies between features.
+
+	Syntax docs:
+	https://mermaid.js.org/syntax/flowchart.html?id=flowcharts-basic-syntax
+	"""
+	markup = f"---\ntitle: Dependency Graph for Feature {cname_base}\n---\ngraph TD;\n"
+	for u,v in networkx.edges(graph):
+		markup += f"    {u}-->{v};\n"
+	return markup
 
 def get_local_bin(name):
 	directory = os.path.dirname(os.path.realpath(__file__))
