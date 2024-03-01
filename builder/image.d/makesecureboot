@@ -198,7 +198,7 @@ EOF
 			],
 			"pkfp" : "$(openssl pkey -pubin -inform PEM -outform DER -in "$pcr_pub_key" | tail -c +25 | openssl dgst -sha256 -hex | awk '{print $2}')",
 			"pol" : "$policy_digest",
-			"sig" : "$(cat "$pcr_signature" | openssl base64 -A)"
+			"sig" : "$(openssl base64 -A -in "$pcr_signature")"
 		}$trailing_comma
 EOF
 
