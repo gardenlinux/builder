@@ -25,7 +25,7 @@ Before=initrd-root-device.target systemd-fsck-root.service
 
 [Service]
 ExecStart=
-ExecStart=/usr/bin/systemd-repart --root=/ --factory-reset=yes --dry-run=no --tpm2-device=auto --tpm2-pcrs=7+11 $dev_path
+ExecStart=/usr/bin/systemd-repart --root=/ --factory-reset=yes --dry-run=no --tpm2-device=auto $dev_path
 ExecStartPost=/usr/bin/udevadm settle
 EOF
 
@@ -33,4 +33,11 @@ mkdir -p "$target/etc/systemd/system/systemd-veritysetup@.service.d"
 cat > "$target/etc/systemd/system/systemd-veritysetup@.service.d/override.conf" << EOF
 [Unit]
 Before=systemd-repart.service
+EOF
+
+mkdir -p "$target/etc/systemd/system/systemd-pcrphase-initrd.service.d"
+cat > "$target/etc/systemd/system/systemd-pcrphase-initrd.service.d/override.conf" << EOF
+[Unit]
+After=sys-devices-platform-MSFT0101:00-tpm-tpm0.device
+Requires=sys-devices-platform-MSFT0101:00-tpm-tpm0.device
 EOF

@@ -31,4 +31,5 @@ systemd
 systemd-ukify
 uidmap
 xorriso
+xxd
 xz-utils
