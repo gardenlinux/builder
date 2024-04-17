@@ -7,5 +7,5 @@ if [ "${1-}" = --second-stage ]; then
 	mount -t tmpfs -o size=4G tmpfs /tmp
 	"$@"
 else
-	unshare --map-root-user --map-users auto --map-groups auto --mount "$0" --second-stage "$@"
+	unshare --map-root-user --map-users auto --map-groups auto --mount fake_xattr "$0" --second-stage "$@"
 fi
