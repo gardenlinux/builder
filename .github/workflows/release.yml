@@ -31,7 +31,7 @@ jobs:
           podman manifest create ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
           podman manifest add ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }} ghcr.io/${{ github.repository }}:amd64-"$SHA"
           podman manifest add ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }} ghcr.io/${{ github.repository }}:arm64-"$SHA"
-          podman push ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
+          podman manifest push ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }} docker://ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
           sed -i 's|container_image=localhost/builder|container_image=ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}|' build
       - name: git tag
         run: |
