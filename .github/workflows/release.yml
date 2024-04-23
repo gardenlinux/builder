@@ -27,7 +27,7 @@ jobs:
           SHA=$(git rev-parse HEAD)
           skopeo login -u token -p ${{ github.token }} ghcr.io
           # Run skopeo in a container to get the latest version
-          podman run -v ${XDG_RUNTIME_DIR}/containers/auth.json:/auth.json docker://quay.io/skopeo/stable:latest copy --multi-arch all docker://ghcr.io/${{ github.repository }}:"$SHA" ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
+          podman run -v ${XDG_RUNTIME_DIR}/containers/auth.json:/auth.json docker://quay.io/skopeo/stable:latest copy --multi-arch all docker://ghcr.io/${{ github.repository }}:"$SHA" docker://ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}
           sed -i 's|container_image=localhost/builder|container_image=ghcr.io/${{ github.repository }}:${{ steps.bump.outputs.newVersion }}|' build
       - name: git tag
         run: |
