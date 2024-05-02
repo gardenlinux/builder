@@ -7,7 +7,6 @@ cpio
 cryptsetup
 curl
 datefudge
-debootstrap
 dosfstools
 e2fsprogs
 fdisk
@@ -16,6 +15,7 @@ libcurl4
 libengine-pkcs11-openssl
 libjson-c5
 make
+mmdebstrap
 mtools
 ostree
 ostree-boot
