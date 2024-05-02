@@ -11,7 +11,7 @@ output="$5"
 chroot_dir="$(mktemp -d)"
 mount -t tmpfs -o size="$TEMPFS_SIZE" tmpfs "$chroot_dir"
 chmod 755 "$chroot_dir"
-mmdebstrap --mode unshare --keyring "$keyring" --arch "$arch" --variant required --include ca-certificates --skip cleanup/apt/lists "$version" "$chroot_dir" "$repo"
+mmdebstrap --mode unshare --keyring "$keyring" --arch "$arch" --variant required --include ca-certificates --skip check/qemu --skip cleanup/apt/lists "$version" "$chroot_dir" "$repo"
 
 gpg --keyring "$keyring" --no-default-keyring --export -a > "$chroot_dir/etc/apt/trusted.gpg.d/keyring.asc"
 echo "deb $repo $version main" > "$chroot_dir/etc/apt/sources.list"
