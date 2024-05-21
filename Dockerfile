@@ -4,7 +4,7 @@ RUN git clone --depth=1 https://github.com/gardenlinux/mv_data
 RUN make -C mv_data install
 
 FROM debian:testing AS aws-kms-pkcs11
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential awscli ca-certificates cmake git libcurl4-openssl-dev libengine-pkcs11-openssl libjson-c-dev libssl-dev libp11-kit-dev libp11-dev zlib1g-dev
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential awscli ca-certificates cmake git libcurl4-openssl-dev libengine-pkcs11-openssl libjson-c-dev libssl-dev libp11-kit-dev libp11-dev pkg-config zlib1g-dev
 RUN git clone --depth=1 --recurse-submodules -b 1.11.315 https://github.com/aws/aws-sdk-cpp
 RUN mkdir aws-sdk-cpp/.build && cd aws-sdk-cpp/.build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DAWS_USE_CRYPTO_SHARED_LIBS=ON -DBUILD_ONLY="kms;acm-pca" .. && make -j "$(nproc)" install
 RUN git clone --depth=1 -b v0.0.10 https://github.com/gardenlinux/aws-kms-pkcs11
