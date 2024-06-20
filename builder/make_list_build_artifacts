@@ -11,8 +11,8 @@ artifacts=(".build/$cname-$COMMIT.tar" ".build/$cname-$COMMIT.release" ".build/$
 
 for feature in "${features[@]}"; do
 	for i in "features/$feature/"{image,convert}.*; do
-		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_]*)*$' <<< "$i")"
-		artifacts+=(".build/$cname-$COMMIT$extension")
+		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_~]*)*$' <<< "$i")"
+		artifacts+=(".build/$cname-$COMMIT${extension%~*}")
 	done
 done
 
@@ -20,4 +20,5 @@ if [ "${#artifacts[@]}" = 3 ] && [ -n "$(./parse_features --feature-dir "feature
 	artifacts+=(".build/$cname-$COMMIT.raw")
 fi
 
+# printf 'DEBUG: [%s] %s -> %s\n' "$0" "$*" "${artifacts[*]}" >&2
 echo "${artifacts[@]}"
