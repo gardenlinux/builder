@@ -7,9 +7,11 @@ extensions=(release manifest raw)
 
 for feature in "features/"*; do
 	for i in "$feature/"{image,convert}.*; do
-		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_]*)*$' <<< "$i")"
-		extensions+=("${extension:1}")
+		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_~]*)*$' <<< "$i")"
+		real_extension="${extension%~*}"
+		extensions+=("${real_extension:1}")
 	done
 done
 
+# printf 'DEBUG: [%s] %s -> %s\n' "$0" "$*" "${extensions[*]}" >&2
 echo "${extensions[@]}"
