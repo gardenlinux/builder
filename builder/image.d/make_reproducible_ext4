@@ -64,12 +64,13 @@ export E2FSPROGS_FAKE_TIME=$timestamp
 uuid=${uuid:-$(echo -n "$hash_prefix:uuid" | uuid_hash)}
 hash_seed=$(echo -n "$hash_prefix:hash_seed" | uuid_hash)
 
+large_journal_options=()
 if [ "$resize" = 1 ] && [ "$large_journal" = 1 ]; then
-	# pretend disk is 64GB in size to get sane defaults for journal size
-	truncate -s 64G "$target"
+	truncate -s +1G "$target"
+	large_journal_options+=(-J size=512)
 fi
 
-mke2fs -t ext4 -b 4096 -E hash_seed="$hash_seed" -U "$uuid" ${label:+"-L"} ${label:+"$label"} -I 256 -d "$source" "$target"
+mke2fs -t ext4 -b 4096 "${large_journal_options[@]}" -E hash_seed="$hash_seed" -U "$uuid" ${label:+"-L"} ${label:+"$label"} -I 256 -d "$source" "$target"
 
 if [ "$quota" = 1 ]; then
 	tune2fs -Q usrquota,grpquota,prjquota "$target"
