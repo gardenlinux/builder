@@ -11,6 +11,11 @@ RUN git clone --depth=1 -b v0.0.10 https://github.com/gardenlinux/aws-kms-pkcs11
 RUN cd aws-kms-pkcs11 && make -j "$(nproc)" AWS_SDK_STATIC=y install
 RUN cp "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so" /aws_kms_pkcs11.so
 
+FROM debian:testing AS datefudge
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential ca-certificates git
+RUN git clone --branch debian/1.26 --depth=1 https://salsa.debian.org/debian/datefudge.git
+RUN make -C datefudge install
+
 FROM debian:testing
 
 LABEL org.opencontainers.image.source="https://github.com/gardenlinux/builder"
@@ -24,6 +29,8 @@ RUN cd /tmp \
 && rm openssl.deb
 COPY --from=mv_data /usr/bin/mv_data /usr/bin/mv_data
 COPY --from=aws-kms-pkcs11 /aws_kms_pkcs11.so /aws_kms_pkcs11.so
+COPY --from=datefudge /usr/lib/datefudge/datefudge.so /usr/lib/datefudge/datefudge.so
+COPY --from=datefudge /usr/bin/datefudge /usr/bin/datefudge
 RUN mv /aws_kms_pkcs11.so "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
 COPY builder /builder
 RUN mkdir /builder/cert
