@@ -257,7 +257,6 @@ if [[ -n "$(find "$dracut_include/etc/repart.d/" -name "1.*.conf")" ]] || { [[ -
 fi
 
 read -r _ cmdline < "$rootfs/etc/kernel/cmdline" # hacky assumption that root= is always at start of kernel cmdline. TODO: find better way to handle this
-cmdline="rd.break systemd.journald.forward_to_console=1 $cmdline"
 if [[ -z "$(cat "$root_hash")" ]]; then
 	if [[ -z "$(cat "$root_repart")" ]]; then
 		root_source=$(tail -n 1 "$fstab" | cut -d " " -f 1)
