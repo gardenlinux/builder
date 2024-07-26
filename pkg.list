@@ -6,7 +6,6 @@ ca-certificates
 cpio
 cryptsetup
 curl
-datefudge
 dosfstools
 e2fsprogs
 fdisk
