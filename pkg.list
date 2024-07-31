@@ -6,10 +6,11 @@ ca-certificates
 cpio
 cryptsetup
 curl
-datefudge
 dosfstools
 e2fsprogs
+erofs-utils
 fdisk
+file
 gnupg2
 libcurl4
 libengine-pkcs11-openssl
