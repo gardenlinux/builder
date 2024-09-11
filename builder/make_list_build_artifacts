@@ -20,5 +20,4 @@ if [ "${#artifacts[@]}" = 3 ] && [ -n "$(./parse_features --feature-dir "feature
 	artifacts+=(".build/$cname-$COMMIT.raw")
 fi
 
-# printf 'DEBUG: [%s] %s -> %s\n' "$0" "$*" "${artifacts[*]}" >&2
 echo "${artifacts[@]}"

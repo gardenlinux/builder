@@ -13,5 +13,4 @@ for feature in "features/"*; do
 	done
 done
 
-# printf 'DEBUG: [%s] %s -> %s\n' "$0" "$*" "${extensions[*]}" >&2
 echo "${extensions[@]}"

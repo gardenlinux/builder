@@ -49,6 +49,7 @@ for feature in "${features[@]}"; do
 		input="$artifact_base-$COMMIT.raw"
 	fi
 
+	# temporarily enable file globbing (+f)
 	shopt -s nullglob
 	set +f
 	advanced_convert_scripts=("features/$feature/convert${extension:-.raw}~"*)
@@ -70,5 +71,4 @@ if [ -z "$script" ]; then
 	exit 1
 fi
 
-# printf 'DEBUG: [%s] %s -> %s %s\n' "$0" "$*" "$script" "$input" >&2
 printf '%s %s\n' "$script" "$input" >&3
