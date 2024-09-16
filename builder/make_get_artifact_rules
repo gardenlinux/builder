@@ -7,8 +7,11 @@ extensions=(release manifest raw)
 
 for feature in "features/"*; do
 	for i in "$feature/"{image,convert}.*; do
-		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_]*)*$' <<< "$i")"
-		extensions+=("${extension:1}")
+		# get target artifact file extensions, usually this is the image/convert script extension
+		# except if the script extension is of the form filename.extA~extB in which case the artifact extension is .extA only
+		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_~]*)*$' <<< "$i")"
+		real_extension="${extension%~*}"
+		extensions+=("${real_extension:1}")
 	done
 done
 

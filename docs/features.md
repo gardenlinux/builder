@@ -71,3 +71,47 @@ The order of execution is as follows:
 - `exec.post` (outside chroot)
 
 When building with multiple features, the execution steps of each feature are interleaved. For example, the `exec.config` step will run for all features before any features' `exec.late` step runs.
+
+## `fstab`, `fstab.mod`
+
+The partition layout of the build image can be defined in an fstab like format.
+The format is:
+
+```
+<part identifier>    <mount point>    <fs type>    <mount options>    <advanced args>
+```
+
+- `<part identifier>`: can be either of the form `LABEL=<label>` or `UUID=<uuid>`
+- `<mount point>`: where the partition will be mounted, it will automatically be initialized with the corresponding sub-tree of the rootfs during build.
+- `<fs type>`: which file system to use for this partition. supported values: `ext4`, `vfat`, `swap`
+- `<mount options>`: the same mount options as in a regular `/etc/fstab`
+- `<advanced args>`: these are additional args parsed by `makepart`. supported options:
+  - `type=<type>`: overwrite the default GPT partition type
+  - `size=<size>`: instead of dynamically calculating the ideal size for the partition set it explicitly
+  - `syslinux`: mark this as a partition on whith to install syslinux to the FAT32 boot sectors
+  - `final_partition`: ensure this partition is placed at the end of the partition table regardless of default sorting. if you don't know why you'd need this you likely shouldn't use it!
+
+The `fstab` can be defined with an equally named file in one and only one feature.
+Additionally, other features can apply modifications to this base `fstab`.
+For this features can define executable `fstab.mod` scripts.
+These scripts are executed in the same order as regular config scripts, each recieving the output of the previous script as its input.
+The first script in the series recieves the init `fstab` file.
+The output of the final file will be used as the effective `fstab`.
+
+> [!IMPORTANT]
+> This pipeline design implies that it is the responsibility of every `fstab.mod` script to re-echo any entry they do not want to modify.
+> Otherwise this is seen as the script dropping the entry.
+
+## `image`, `image.<ext>`, `convert.<ext>`, `convert.<extA>~<extB>`
+
+Alternative, or additionally, to the `fstab` mechanism the builder also offers more fine grained control over image creation via explicit image create and convert scripts.
+
+The `image` and `image.<ext>` scripts are used to directly create an image given a rootfs tar.
+They get a path to the rootfs tar as `argv[1]` and a path where the target image should be written as `argv[2]`.
+The `image` script outputs a `.raw` artifact, the `image.<ext>` script does the same but for `.<ext>` artifacts.
+
+The `convert` scripts instead convert from one image format to another.
+They take the image artifact created by an image script and output a different format, e.g. convert a raw image to a VM manager specific format.
+Scripts of the form `convert.<ext>` get the raw image as input and produce a `.<ext>` output.
+Scripts of the form `convert.<extA>~<extB>` get `.<extB>` as input and produces `.<extA>` as output.
+The second form is only useful for advanced use cases, if you are not aware of one, you'll probably never need it!

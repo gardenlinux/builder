@@ -3,7 +3,7 @@
 set -eufo pipefail
 
 exec 3>&1
-exec 1>&1
+exec 1>&2
 
 # get longest chain of extensions, but not extensions starting with a number to prevent parsing minor version as extension
 extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_]*)*$' <<< "$1")"
@@ -48,6 +48,28 @@ for feature in "${features[@]}"; do
 		script="features/$feature/convert$extension"
 		input="$artifact_base-$COMMIT.raw"
 	fi
+
+	# temporarily enable file globbing (+f)
+	shopt -s nullglob
+	set +f
+	advanced_convert_scripts=("features/$feature/convert${extension:-.raw}~"*)
+	set -f
+
+	# Advanced convert scripts are scripts of the form convert.extA~extB.
+	# Unlike regular convert scripts these don't always get the image.raw as input,
+	# instead they recieve image.extB as their input.
+	# This allows for convert scripts to operate on image scripts producing non .raw output
+	# or for covert scripts to operate on outputs of prior convert scripts.
+
+	for i in "${advanced_convert_scripts[@]}"; do
+		if [ "$is_feature_script" = 1 ]; then
+			printf "error: %s conflicts with %s\n" "$script" "$i"
+			exit 1
+		fi
+		is_feature_script=1
+		script="$i"
+		input="$artifact_base-$COMMIT.${i##*~}"
+	done
 done
 
 if [ -z "$script" ]; then
