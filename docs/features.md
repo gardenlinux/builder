@@ -89,7 +89,6 @@ The format is:
   - `type=<type>`: overwrite the default GPT partition type
   - `size=<size>`: instead of dynamically calculating the ideal size for the partition set it explicitly
   - `syslinux`: mark this as a partition on whith to install syslinux to the FAT32 boot sectors
-  - `weight`: deprecated
   - `final_partition`: ensure this partition is placed at the end of the partition table regardless of default sorting. if you don't know why you'd need this you likely shouldn't use it!
 
 The `fstab` can be defined with an equally named file in one and only one feature.

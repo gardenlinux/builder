@@ -51,9 +51,6 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 			"syslinux")
 				syslinux=1
 				;;
-			"weight")
-				weight="$value"
-				;;
 			"final_partition")
 				is_final_partition=1
 				;;
