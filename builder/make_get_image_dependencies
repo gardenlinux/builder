@@ -55,6 +55,12 @@ for feature in "${features[@]}"; do
 	advanced_convert_scripts=("features/$feature/convert${extension:-.raw}~"*)
 	set -f
 
+	# Advanced convert scripts are scripts of the form convert.extA~extB.
+	# Unlike regular convert scripts these don't always get the image.raw as input,
+	# instead they recieve image.extB as their input.
+	# This allows for convert scripts to operate on image scripts producing non .raw output
+	# or for covert scripts to operate on outputs of prior convert scripts.
+
 	for i in "${advanced_convert_scripts[@]}"; do
 		if [ "$is_feature_script" = 1 ]; then
 			printf "error: %s conflicts with %s\n" "$script" "$i"

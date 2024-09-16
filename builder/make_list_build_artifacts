@@ -11,6 +11,8 @@ artifacts=(".build/$cname-$COMMIT.tar" ".build/$cname-$COMMIT.release" ".build/$
 
 for feature in "${features[@]}"; do
 	for i in "features/$feature/"{image,convert}.*; do
+		# get target artifact file extension, usually this is the image/convert script extension
+		# except if the script extension is of the form filename.extA~extB in which case the artifact extension is .extA only
 		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_~]*)*$' <<< "$i")"
 		artifacts+=(".build/$cname-$COMMIT${extension%~*}")
 	done
