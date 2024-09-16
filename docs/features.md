@@ -111,7 +111,8 @@ The `image` and `image.<ext>` scripts are used to directly create an image given
 They get a path to the rootfs tar as `argv[1]` and a path where the target image should be written as `argv[2]`.
 The `image` script outputs a `.raw` artifact, the `image.<ext>` script does the same but for `.<ext>` artifacts.
 
-The convert scripts instead convert an image artifact created by an imaging script to another image format. e.g. convert a raw image to a VM manager specific format.
+The `convert` scripts instead convert from one image format to another.
+They take the image artifact created by an image script and output a different format, e.g. convert a raw image to a VM manager specific format.
 Scripts of the form `convert.<ext>` get the raw image as input and produce a `.<ext>` output.
 Scripts of the form `convert.<extA>~<extB>` get `.<extB>` as input and produces `.<extA>` as output.
 The second form is only useful for advanced use cases, if you are not aware of one, you'll probably never need it!
