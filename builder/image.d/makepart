@@ -64,7 +64,7 @@ sed 's/#.*//;/^[[:space:]]*$/d' \
 
 	# check if fstab entry specifies source by UUID or LABEL
 	uuid="$(grep -oP '(?<=^UUID=)[a-fA-F0-9\-]*$' <<< "$source" || true)"
-	label="$(grep -oP '(?<=^LABEL=)[a-zA-Z0-9\_\-]*$' <<< "$source" || true)"
+	label="$(grep -oP '(?<=^LABEL=)[[:graph:]]*$' <<< "$source" || true)"
 
 	if [[ "$depth" = 0 ]]; then
 		# we iterate depth sorted, so all other partitions should already have been processed and written to fstab
