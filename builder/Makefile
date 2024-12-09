@@ -24,6 +24,7 @@ endef
 required_vars := REPO COMMIT TIMESTAMP DEFAULT_VERSION TEMPFS_SIZE
 $(foreach var,$(required_vars),$(eval $(call require_var,$(var))))
 
+FEATURES_DISABLED ?= ''
 SHORT_COMMIT := $(shell head -c 8 <<< '$(COMMIT)')
 
 NATIVE_ARCH := $(shell dpkg --print-architecture)
@@ -54,7 +55,7 @@ clean:
 .build/%-$(SHORT_COMMIT).tar: .build/bootstrap-$$(call cname_arch,$$*)-$$(call cname_version,$$*)-$(SHORT_COMMIT).tar .build/native_bin-$$(call cname_version,$$*)-$(SHORT_COMMIT).tar $(shell ./make_directory_sentinel features) $(shell ./make_directory_sentinel cert)
 	target '$@' '$<'
 	info 'configuring rootfs $*-$(SHORT_COMMIT)'
-	features="$$(./parse_features --feature-dir features --cname '$*' features)"
+	features="$$(./parse_features --feature-dir features --ignore '$(FEATURES_DISABLED)' --cname '$*' features)"
 	BUILDER_CNAME='$*'
 	BUILDER_VERSION='$(call cname_version,$*)'
 	BUILDER_ARCH='$(call cname_arch,$*)'

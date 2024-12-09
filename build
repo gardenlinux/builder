@@ -19,6 +19,7 @@ container_run_opts=(
 )
 
 container_cmd=()
+features_disabled=()
 
 use_kms=0
 resolve_cname=0
@@ -35,6 +36,10 @@ while [ $# -gt 0 ]; do
 			;;
 		--container-run-opts)
 			declare -a "container_run_opts=($2)"
+			shift 2
+			;;
+		--disable-feature)
+			features_disabled+=("$2")
 			shift 2
 			;;
 		--privileged)
@@ -87,7 +92,6 @@ commit="$(./get_commit)"
 timestamp="$(./get_timestamp)"
 default_version="$(./get_version)"
 
-
 if [ "$resolve_cname" = 1 ]; then
 	arch="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" dpkg --print-architecture)"
 	cname="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" /builder/parse_features --feature-dir /builder/features --default-arch "$arch" --default-version "$default_version" --cname "$1")"
@@ -101,6 +105,7 @@ make_opts=(
 	COMMIT="$commit"
 	TIMESTAMP="$timestamp"
 	DEFAULT_VERSION="$default_version"
+	FEATURES_DISABLED="$(IFS="," ; echo "${features_disabled[*]}")"
 )
 
 if [ "$use_kms" = 1 ]; then
