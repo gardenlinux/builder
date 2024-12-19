@@ -97,6 +97,7 @@ if [ "$resolve_cname" = 1 ]; then
 fi
 
 make_opts=(
+	CI="$CI"
 	REPO="$repo"
 	COMMIT="$commit"
 	TIMESTAMP="$timestamp"
