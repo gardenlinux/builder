@@ -106,6 +106,7 @@ make_opts=(
 	COMMIT="$commit"
 	TIMESTAMP="$timestamp"
 	DEFAULT_VERSION="$default_version"
+	LOG_WITH_TIMESTAMP="${LOG_WITH_TIMESTAMP:-true}"
 )
 
 if [ "$use_kms" = 1 ]; then
