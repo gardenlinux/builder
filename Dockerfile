@@ -21,7 +21,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 RUN git clone https://github.com/gardenlinux/resizefat32
 RUN make -C resizefat32 install
 
-FROM debian:testing
+FROM ghcr.io/gardenlinux/repo-debian-snapshot:1735677232
 
 LABEL org.opencontainers.image.source="https://github.com/gardenlinux/builder"
 LABEL org.opencontainers.image.description="Builder for Garden Linux"
