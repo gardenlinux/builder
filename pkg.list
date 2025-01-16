@@ -18,6 +18,7 @@ libjson-c5
 make
 mmdebstrap
 mtools
+openssl
 ostree
 ostree-boot
 python3
