@@ -27,7 +27,6 @@ python3-networkx
 python3-pefile
 python3-yaml
 qemu-utils
-sbsigntool
 squashfs-tools
 systemd
 systemd-ukify
