@@ -41,5 +41,9 @@ RUN curl -sSLf https://github.com/gardenlinux/seccomp_fake_xattr/releases/downlo
 	| gzip -d \
 	| tar -xO seccomp_fake_xattr-$(uname -m)/fake_xattr > /usr/bin/fake_xattr \
 	&& chmod +x /usr/bin/fake_xattr
+RUN mkdir /tmp/sbsign \
+	&& cd /tmp/sbsign \
+	&& curl -sSLf https://github.com/gardenlinux/package-sbsigntool/releases/download/0.9.4-3.2gl0/build.tar.xz.0000 | xz -d | tar -x \
+	&& dpkg -i sbsigntool_*_$(dpkg --print-architecture).deb
 RUN echo 'root:1:65535' | tee /etc/subuid /etc/subgid > /dev/null
 ENTRYPOINT [ "/usr/sbin/setup_namespace" ]
