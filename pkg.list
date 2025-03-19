@@ -11,6 +11,7 @@ e2fsprogs
 erofs-utils
 fdisk
 file
+git
 gnupg2
 libcurl4
 libengine-pkcs11-openssl
