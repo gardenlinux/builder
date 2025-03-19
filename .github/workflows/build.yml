@@ -4,25 +4,47 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ amd64, arm64 ]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-latest-arm' || 'ubuntu-latest' }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: gardenlinux/workflow-telemetry-action@v2
         with:
           metric_frequency: 1
           comment_on_pr: false
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          arch: ${{ matrix.arch }}
       - name: build builder container images
         run: |
-          sudo apt-get update
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends qemu-user-static
-          podman build --squash-all --arch amd64 --tag ghcr.io/${{ github.repository }}:amd64-${{ github.sha }} .
-          podman build --squash-all --arch arm64 --tag ghcr.io/${{ github.repository }}:arm64-${{ github.sha }} .
+          podman build --squash-all --arch ${{ matrix.arch }} --tag ghcr.io/${{ github.repository }}:${{ matrix.arch }}-${{ github.sha }} .
+      - name: publish arch specific builder container image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          podman login -u token -p ${{ github.token }} ghcr.io
+          podman push ghcr.io/${{ github.repository }}:${{ matrix.arch }}-${{ github.sha }}
+  push:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: gardenlinux/workflow-telemetry-action@v2
+        with:
+          metric_frequency: 1
+          comment_on_pr: false
+      - uses: actions/checkout@v4
       - name: publish builder container images
         if: github.ref == 'refs/heads/main'
         run: |
           podman login -u token -p ${{ github.token }} ghcr.io
-          podman push ghcr.io/${{ github.repository }}:amd64-${{ github.sha }}
-          podman push ghcr.io/${{ github.repository }}:arm64-${{ github.sha }}
           podman manifest create ghcr.io/${{ github.repository }}:${{ github.sha }}
           podman manifest add ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:amd64-${{ github.sha }}
           podman manifest add ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:arm64-${{ github.sha }}
@@ -41,7 +63,7 @@ jobs:
   # Run for new commits on the main branch
   release-latest:
     runs-on: ubuntu-latest
-    needs: build
+    needs: push
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
