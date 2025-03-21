@@ -14,7 +14,15 @@ chmod 755 "$chroot_dir"
 mmdebstrap --mode unshare --keyring "$keyring" --arch "$arch" --variant required --include ca-certificates  --aptopt='APT::Sandbox::User "root"' --skip check/qemu --skip cleanup/apt/lists "$version" "$chroot_dir" "$repo"
 
 gpg --keyring "$keyring" --no-default-keyring --export -a > "$chroot_dir/etc/apt/trusted.gpg.d/keyring.asc"
-echo "deb $repo $version main" > "$chroot_dir/etc/apt/sources.list"
+
+cat <<EOF > /etc/apt/sources.list.d/gardenlinux.sources
+echo "Types: deb"
+echo "URIs: ${repo}"
+echo "Suites: ${version}"
+echo "Components: main"
+echo "Enabled: yes"
+echo "Signed-By: /etc/apt/trusted.gpg.d/keyring.asc"
+EOF
 
 find "$chroot_dir/proc" "$chroot_dir/sys" "$chroot_dir/dev" "$chroot_dir/run" "$chroot_dir/tmp" -mindepth 1 -delete
 tar --create --sort name --xattrs --xattrs-include 'security.*' --numeric-owner --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime --transform 's|^\./||' --directory "$chroot_dir" . > "$output"
