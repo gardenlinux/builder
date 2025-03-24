@@ -15,7 +15,7 @@ mmdebstrap --mode unshare --keyring "$keyring" --arch "$arch" --variant required
 
 gpg --keyring "$keyring" --no-default-keyring --export -a > "$chroot_dir/etc/apt/trusted.gpg.d/keyring.asc"
 
-cat <<EOF > /etc/apt/sources.list.d/gardenlinux.sources
+cat <<EOF > $chroot_dir/etc/apt/sources.list.d/gardenlinux.sources
 echo "Types: deb"
 echo "URIs: ${repo}"
 echo "Suites: ${version}"
