@@ -2,6 +2,7 @@
 
 set -eufo pipefail
 
+LOG_WITH_TIMESTAMP="${LOG_WITH_TIMESTAMP:-true}"
 target="$1"
 shift
 
@@ -9,6 +10,12 @@ echo -n | cat "${@/%/.log}" > "$target.log"
 
 while IFS= read -r line; do
 	date="$(date -u '+%Y-%m-%d %H:%M:%S')"
-	printf '[%s %s] %s\n' "$target" "$date" "$line"
+
+	if [ "${LOG_WITH_TIMESTAMP}" == "true" ]; then
+		printf '[%s %s] %s\n' "$target" "$date" "$line"
+	else
+		printf '[%s] %s\n' "$target" "$line"
+	fi
+
 	printf '[%s] %s\n' "$date" "$line" >> "$target.log"
 done
