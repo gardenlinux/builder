@@ -7,7 +7,7 @@ if [ "${1-}" = --second-stage ]; then
 	mount -t tmpfs -o size=4G tmpfs /tmp
 	"$@"
 	if [ -d /builder/.build ]; then
-		chown $(stat -c "%u:%g" /builder/.build) -R /builder/.build
+		chown "$(stat -c "%u:%g" /builder/.build)" -R /builder/.build
 	fi
 else
 	unshare --map-root-user --map-users auto --map-groups auto --mount "$0" --second-stage "$@"

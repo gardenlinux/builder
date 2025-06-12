@@ -124,7 +124,7 @@ if [ -d cert ]; then
 	container_mount_opts+=(-v "$PWD/cert:/builder/cert:ro")
 fi
 
-if [ "$container_engine" = "docker" ] && out=$(sysctl kernel.apparmor_restrict_unprivileged_userns) && [[ $out = "kernel.apparmor_restrict_unprivileged_userns = 1" ]]; then
+if [ "$container_engine" = "docker" ] && out=$(sysctl kernel.apparmor_restrict_unprivileged_userns 2> /dev/null) && [[ $out = "kernel.apparmor_restrict_unprivileged_userns = 1" ]]; then
 	echo Allow unprivileged user namespaces, use podman to avoid this setting
 	sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 fi
