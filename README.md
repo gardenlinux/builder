@@ -8,6 +8,9 @@ By default, the Builder runs inside rootless Podman, enabling building without r
 
 The Builder has minimal dependencies and only requires a working container engine. We recommend using rootless Podman. Please refer to the [Podman rootless setup guide](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md) for instructions on setting it up.
 
+> [!WARNING]  
+> When using Docker on systems restricting unprivileged user namespaces with apparmor (e.g. Ubuntu 23.10 or newer) a new apparmor profile will be created at `/etc/apparmor.d/containers/builder`.
+
 ## Usage
 
 To utilize the Builder, follow these steps:
