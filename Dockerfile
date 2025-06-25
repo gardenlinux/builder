@@ -36,7 +36,7 @@ COPY --from=resizefat32 /usr/bin/resizefat32 /usr/bin/resizefat32
 RUN mv /aws_kms_pkcs11.so "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
 COPY builder /builder
 RUN mkdir /builder/cert
-COPY setup_namespace /usr/sbin/setup_namespace
+COPY setup_env /usr/sbin/setup_env
 RUN curl -sSLf https://github.com/gardenlinux/seccomp_fake_xattr/releases/download/latest/seccomp_fake_xattr-$(uname -m).tar.gz \
 	| gzip -d \
 	| tar -xO seccomp_fake_xattr-$(uname -m)/fake_xattr > /usr/bin/fake_xattr \
@@ -46,4 +46,6 @@ RUN mkdir /tmp/sbsign \
 	&& curl -sSLf https://github.com/gardenlinux/package-sbsigntool/releases/download/0.9.4-3.2gl0/build.tar.xz.0000 | xz -d | tar -x \
 	&& dpkg -i sbsigntool_*_$(dpkg --print-architecture).deb
 RUN echo 'root:1:65535' | tee /etc/subuid /etc/subgid > /dev/null
-ENTRYPOINT [ "/usr/sbin/setup_namespace" ]
+RUN python3 -m venv /root/.local/builder-python-venv
+RUN /root/.local/builder-python-venv/bin/pip install -r "/builder/requirements.txt"
+ENTRYPOINT [ "/usr/sbin/setup_env" ]
