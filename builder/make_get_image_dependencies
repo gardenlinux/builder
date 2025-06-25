@@ -7,7 +7,7 @@ exec 1>&2
 
 # get longest chain of extensions, but not extensions starting with a number to prevent parsing minor version as extension
 extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_]*)*$' <<< "$1")"
-artifact_base="${1%"-$COMMIT$extension"}"
+artifact_base="${1%"$extension"}"
 cname="$(basename "$artifact_base")"
 
 [ "$extension" != ".raw" ] || extension=
@@ -18,15 +18,15 @@ input=
 
 if [ -f "image$extension" ]; then
 	script="image$extension"
-	input="$artifact_base-$COMMIT.tar"
+	input="$artifact_base.tar"
 fi
 
 if [ -f "convert$extension" ]; then
 	script="convert$extension"
-	input="$artifact_base-$COMMIT.raw"
+	input="$artifact_base.raw"
 fi
 
-IFS=',' read -r -a features < <(./parse_features --allow-frankenstein --feature-dir features --cname "$cname" features)
+IFS=',' read -r -a features < <(gl-features-parse --feature-dir features --cname "$cname" features)
 
 for feature in "${features[@]}"; do
 	if [ -s "features/$feature/image$extension" ]; then
@@ -36,7 +36,7 @@ for feature in "${features[@]}"; do
 		fi
 		is_feature_script=1
 		script="features/$feature/image$extension"
-		input="$artifact_base-$COMMIT.tar"
+		input="$artifact_base.tar"
 	fi
 
 	if [ -s "features/$feature/convert$extension" ]; then
@@ -46,7 +46,7 @@ for feature in "${features[@]}"; do
 		fi
 		is_feature_script=1
 		script="features/$feature/convert$extension"
-		input="$artifact_base-$COMMIT.raw"
+		input="$artifact_base.raw"
 	fi
 
 	# temporarily enable file globbing (+f)
@@ -68,7 +68,7 @@ for feature in "${features[@]}"; do
 		fi
 		is_feature_script=1
 		script="$i"
-		input="$artifact_base-$COMMIT.${i##*~}"
+		input="$artifact_base.${i##*~}"
 	done
 done
 
