@@ -8,9 +8,6 @@ By default, the Builder runs inside rootless Podman, enabling building without r
 
 The Builder has minimal dependencies and only requires a working container engine. We recommend using rootless Podman. Please refer to the [Podman rootless setup guide](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md) for instructions on setting it up.
 
-> [!WARNING]  
-> When using Docker on systems restricting unprivileged user namespaces with apparmor (e.g. Ubuntu 23.10 or newer) a new apparmor profile will be created at `/etc/apparmor.d/containers/builder`.
-
 ## Usage
 
 To utilize the Builder, follow these steps:
@@ -24,6 +21,12 @@ wget https://github.com/gardenlinux/builder/releases/download/latest/build
 ```
 
 By default, the Builder uses `podman` as the container engine. If you prefer using a different container engine, you can specify it using the `--container-engine` option.
+
+If you decide to use `docker` on a system restricting unprivileged user namespaces with apparmor (e.g. Ubuntu 23.10 or newer) an apparmor profile allowing `userns` is required. This can be automatically created and selected by the Builder by opting in to the permanent system change. You can avoid this by:
+
+- Using `podman`
+- Passing a custom profile using the `--apparmor-profile` option
+- Using a system not restricting unprivileged user namespaces
 
 ## Config Directory
 
