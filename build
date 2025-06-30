@@ -131,7 +131,7 @@ fi
 
 # Check if builder apparmor profile has to be created or selected
 if [ "$container_engine" = "docker" ] \
-	&& [ ! $apparmor_profile ] \
+	&& [ ! "$apparmor_profile" ] \
 	&& out=$(sysctl kernel.apparmor_restrict_unprivileged_userns 2> /dev/null) \
 	&& [[ $out = "kernel.apparmor_restrict_unprivileged_userns = 1" ]]; then
 	if [ ! -d /etc/apparmor.d/containers ] || [ ! -f /etc/apparmor.d/containers/builder ]; then
@@ -157,11 +157,11 @@ if [ "$container_engine" = "docker" ] \
 fi
 
 # Apply apparmor profile if seleceted
-if [ $apparmor_profile ]; then
+if [ "$apparmor_profile" ]; then
 	replaced=false
 	for i in "${!container_run_opts[@]}"; do
 			if [ "${container_run_opts[$i]}" = "apparmor=unconfined" ]; then
-					container_run_opts[$i]="apparmor=$apparmor_profile"
+					container_run_opts["$i"]="apparmor=$apparmor_profile"
 					replaced=true
 			fi
 	done
