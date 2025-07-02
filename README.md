@@ -22,6 +22,12 @@ wget https://github.com/gardenlinux/builder/releases/download/latest/build
 
 By default, the Builder uses `podman` as the container engine. If you prefer using a different container engine, you can specify it using the `--container-engine` option.
 
+If you decide to use `docker` on a system restricting unprivileged user namespaces with apparmor (e.g. Ubuntu 23.10 or newer) an apparmor profile allowing `userns` is required. This can be automatically created and selected by the Builder by opting in to the permanent system change. You can avoid this by:
+
+- Using `podman`
+- Passing a custom profile using the `--apparmor-profile` option
+- Using a system not restricting unprivileged user namespaces
+
 ## Config Directory
 
 A config directory serves as the input for the Builder and is used to create a Linux system image. It consists of the following components:
