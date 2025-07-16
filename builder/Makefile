@@ -26,8 +26,7 @@ $(foreach var,$(required_vars),$(eval $(call require_var,$(var))))
 
 SHORT_COMMIT := $(shell head -c 8 <<< '$(COMMIT)')
 
-NATIVE_ARCH := $(shell dpkg --print-architecture)
-NATIVE_PKGS := bash dash dpkg grep mawk openssh-client policycoreutils sed tar util-linux gzip xz-utils
+DEFAULT_ARCH := $(shell dpkg --print-architecture)
 
 export AWS_DEFAULT_REGION AWS_REGION AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
 
@@ -46,12 +45,7 @@ clean:
 	version='$(call cname_version,$*)'
 	./bootstrap "$$arch" "$$version" '$(REPO)' keyring.gpg '$@'
 
-.build/native_bin-%-$(SHORT_COMMIT).tar: .build/bootstrap-$(NATIVE_ARCH)-%-$(SHORT_COMMIT).tar
-	target '$@'
-	info 'configuring native_bin'
-	./configure_nativetools '$<' '$@' $(NATIVE_PKGS)
-
-.build/%-$(SHORT_COMMIT).tar: .build/bootstrap-$$(call cname_arch,$$*)-$$(call cname_version,$$*)-$(SHORT_COMMIT).tar .build/native_bin-$$(call cname_version,$$*)-$(SHORT_COMMIT).tar $(shell ./make_directory_sentinel features) $(shell ./make_directory_sentinel cert)
+.build/%-$(SHORT_COMMIT).tar: .build/bootstrap-$$(call cname_arch,$$*)-$$(call cname_version,$$*)-$(SHORT_COMMIT).tar $(shell ./make_directory_sentinel features) $(shell ./make_directory_sentinel cert)
 	target '$@' '$<'
 	info 'configuring rootfs $*-$(SHORT_COMMIT)'
 	features="$$(./parse_features --feature-dir features --cname '$*' features)"
@@ -62,7 +56,7 @@ clean:
 	BUILDER_COMMIT='$(COMMIT)'
 	BUILDER_FEATURES="$$features"
 	export BUILDER_CNAME BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES
-	./configure '$(word 1,$^)' '$(word 2,$^)' '$@'
+	./configure '$(word 1,$^)' '$@'
 
 define artifact_template =
 .build/%-$(SHORT_COMMIT).$1: $$$$(shell COMMIT=$(SHORT_COMMIT) ./make_get_image_dependencies '$$$$@') $$(shell ./make_directory_sentinel features) $$(shell ./make_directory_sentinel cert)
@@ -91,7 +85,7 @@ $(foreach artifact_rule,$(shell ./make_get_artifact_rules),$(eval $(call artifac
 		echo "$$(basename "$$f").log" | tee -a '$@'
 	done
 
-%: .build/$$(shell ./parse_features --feature-dir features --default-arch '$$(NATIVE_ARCH)' --default-version '$$(DEFAULT_VERSION)' --cname '$$*')-$(SHORT_COMMIT).artifacts
+%: .build/$$(shell ./parse_features --feature-dir features --default-arch '$$(DEFAULT_ARCH)' --default-version '$$(DEFAULT_VERSION)' --cname '$$*')-$(SHORT_COMMIT).artifacts
 	ln -f -s -r '$<' '.build/$*'
 
 # prevents match anything rule from applying to Makefile and image/convert scripts

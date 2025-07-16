@@ -3,8 +3,7 @@
 set -eufo pipefail
 
 input="$1"
-native_bin="$2"
-output="$3"
+output="$2"
 
 IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
 
@@ -14,7 +13,6 @@ chmod 755 "$chroot_dir"
 chcon system_u:object_r:unlabeled_t:s0 "$chroot_dir"
 
 tar --extract --xattrs --xattrs-include 'security.*' --directory "$chroot_dir" < "$input"
-tar --extract --xattrs --xattrs-include 'security.*' --directory "$chroot_dir" < "$native_bin"
 
 mount --rbind --make-rprivate /proc "$chroot_dir/proc"
 mount --rbind --make-rprivate /sys "$chroot_dir/sys"
@@ -22,7 +20,7 @@ mount --rbind --make-rprivate /dev "$chroot_dir/dev"
 
 mkdir "$chroot_dir/builder"
 mount --rbind --make-rprivate /builder "$chroot_dir/builder"
-PATH="/native_bin:$PATH" chroot "$chroot_dir" /builder/configure.chroot
+chroot "$chroot_dir" /builder/configure.chroot
 umount -l "$chroot_dir/builder"
 rmdir "$chroot_dir/builder"
 
@@ -33,7 +31,6 @@ for feature in "${features[@]}"; do
 	fi
 done
 
-rm -rf "$chroot_dir/native_bin"
 
 umount -l "$chroot_dir/proc"
 umount -l "$chroot_dir/sys"
