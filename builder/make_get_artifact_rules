@@ -3,7 +3,7 @@
 set -euo pipefail
 shopt -s nullglob
 
-extensions=(release manifest raw)
+extensions=(release manifest requirements raw)
 
 for feature in "features/"*; do
 	for i in "$feature/"{image,convert}.*; do
