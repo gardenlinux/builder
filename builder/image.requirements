@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+uefi=false
+secureboot=false
+tpm2=false
+
+IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
+for feature in "${features[@]}"; do
+	if [ -e "/builder/features/$feature/requirements.mod" ]; then
+		source "/builder/features/$feature/requirements.mod"
+	fi
+done
+
+cat > "$2" << EOF
+arch=$BUILDER_ARCH
+uefi=$uefi
+secureboot=$secureboot
+tpm2=$tpm2
+EOF
