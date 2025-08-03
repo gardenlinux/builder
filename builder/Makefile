@@ -49,13 +49,19 @@ clean:
 	target '$@' '$<'
 	info 'configuring rootfs $*-$(SHORT_COMMIT)'
 	features="$$(./parse_features --feature-dir features --cname '$*' features)"
+	features_platforms="$$(./parse_features --feature-dir features --cname '$*' platforms)"
+	features_elements="$$(./parse_features --feature-dir features --cname '$*' elements)"
+	features_flags="$$(./parse_features --feature-dir features --cname '$*' flags)"
 	BUILDER_CNAME='$*'
 	BUILDER_VERSION='$(call cname_version,$*)'
 	BUILDER_ARCH='$(call cname_arch,$*)'
 	BUILDER_TIMESTAMP='$(TIMESTAMP)'
 	BUILDER_COMMIT='$(COMMIT)'
 	BUILDER_FEATURES="$$features"
-	export BUILDER_CNAME BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES
+	BUILDER_FEATURES_PLATFORMS="$$features_platforms"
+	BUILDER_FEATURES_ELEMENTS="$$features_elements"
+	BUILDER_FEATURES_FLAGS="$$features_flags"
+	export BUILDER_CNAME BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES BUILDER_FEATURES_PLATFORMS BUILDER_FEATURES_ELEMENTS BUILDER_FEATURES_FLAGS
 	./configure '$(word 1,$^)' '$@'
 
 define artifact_template =
@@ -65,13 +71,19 @@ define artifact_template =
 	target '$$@' "$$$$input"
 	info 'building $1 image $$*'
 	features="$$$$(./parse_features --feature-dir features --cname '$$*' features)"
+	features_platforms="$$$$(./parse_features --feature-dir features --cname '$$*' platforms)"
+	features_elements="$$$$(./parse_features --feature-dir features --cname '$$*' elements)"
+	features_flags="$$$$(./parse_features --feature-dir features --cname '$$*' flags)"
 	BUILDER_CNAME='$$*'
 	BUILDER_VERSION='$$(call cname_version,$$*)'
 	BUILDER_ARCH='$$(call cname_arch,$$*)'
 	BUILDER_TIMESTAMP='$$(TIMESTAMP)'
 	BUILDER_COMMIT='$$(COMMIT)'
 	BUILDER_FEATURES="$$$$features"
-	export BUILDER_CNAME BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES
+	BUILDER_FEATURES_PLATFORMS="$$$$features_platforms"
+	BUILDER_FEATURES_ELEMENTS="$$$$features_elements"
+	BUILDER_FEATURES_FLAGS="$$$$features_flags"
+	export BUILDER_CNAME BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES BUILDER_FEATURES_PLATFORMS BUILDER_FEATURES_ELEMENTS BUILDER_FEATURES_FLAGS
 	"./$$$$script" "$$$$input" '$$@'
 endef
 
