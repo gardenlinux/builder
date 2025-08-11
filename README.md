@@ -41,8 +41,8 @@ In addition to the above components, your configuration directory must include t
 - `get_commit`: This script should output the Git commit used to tag the build artifacts.
 - `get_repo`: This script should output the apt package repository to use.
 - `get_timestamp`: This script should output the timestamp to be used instead of the real system time, ensuring reproducibility of builds.
-- `get_version`: This script should output the version of the package repository to use. For example, use `trixie` for Debian or `today` for Garden Linux.
-- `keyring.gpg`: The PGP key used to validate the package repository. For Debian, you can obtain this key from the [debian-archive-keyring](https://packages.debian.org/trixie/debian-archive-keyring) package.
+- `get_version`: This script should output the version of the package repository to use. For example, use `forky` for Debian or `today` for Garden Linux.
+- `keyring.gpg`: The PGP key used to validate the package repository. For Debian, you can obtain this key from the [debian-archive-keyring](https://packages.debian.org/forky/debian-archive-keyring) package.
 
 For a quick start guide on setting up your own config directory with your own features checkout [getting_started.md](docs/getting_started.md).
 

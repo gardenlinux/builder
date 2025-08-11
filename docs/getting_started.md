@@ -22,11 +22,11 @@ To ensure that your local Podman installation is working correctly, you can test
 ./build base
 ```
 
-This command will create a bootable Debian Trixie disk image at `.build/base-amd64-trixie-6f72b564.raw` (note that the commit may have changed since the time of writing).
+This command will create a bootable Debian Forky disk image at `.build/base-amd64-forky-6f72b564.raw` (note that the commit may have changed since the time of writing).
 You can test run the image using [QEMU](https://www.qemu.org):
 
 ```shell
-qemu-system-x86_64 -m 2048 -nodefaults -display none -serial mon:stdio -drive if=pflash,unit=0,readonly=on,format=raw,file=/usr/share/OVMF/OVMF_CODE.fd -drive if=virtio,format=raw,file=.build/base-amd64-trixie-6f72b564.raw
+qemu-system-x86_64 -m 2048 -nodefaults -display none -serial mon:stdio -drive if=pflash,unit=0,readonly=on,format=raw,file=/usr/share/OVMF/OVMF_CODE.fd -drive if=virtio,format=raw,file=.build/base-amd64-forky-6f72b564.raw
 ```
 
 Now that we have verified that everything is working correctly, let's proceed to build our own feature.
@@ -117,7 +117,7 @@ To test your feature, build the image using the following command:
 You can then run the image with QEMU using the following command:
 
 ```shell
-qemu-system-x86_64 -m 2048 -nodefaults -display none -serial mon:stdio -drive if=pflash,unit=0,readonly=on,format=raw,file=/usr/share/OVMF/OVMF_CODE.fd -drive if=virtio,format=raw,file=.build/nginx-amd64-trixie-local.raw -netdev user,id=net0,hostfwd=tcp::8080-:80 -device virtio-net-pci,netdev=net0
+qemu-system-x86_64 -m 2048 -nodefaults -display none -serial mon:stdio -drive if=pflash,unit=0,readonly=on,format=raw,file=/usr/share/OVMF/OVMF_CODE.fd -drive if=virtio,format=raw,file=.build/nginx-amd64-forky-local.raw -netdev user,id=net0,hostfwd=tcp::8080-:80 -device virtio-net-pci,netdev=net0
 ```
 
 If everything worked as intended, you should see the system boot up. Once the system is booted, opening http://localhost:8080 in a browser should display the "Hello World!" message.
