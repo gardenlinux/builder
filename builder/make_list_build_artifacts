@@ -18,7 +18,8 @@ for feature in "${features[@]}"; do
 	done
 done
 
-if [ "${#artifacts[@]}" = 4 ] && [ -n "$(./parse_features --feature-dir "features" --cname "$cname" platforms)" ]; then
+# always add raw image file to artifacts for tests in QEMU VM
+if [ -n "$(./parse_features --feature-dir "features" --cname "$cname" platforms)" ]; then
 	artifacts+=(".build/$cname-$COMMIT.raw")
 fi
 
