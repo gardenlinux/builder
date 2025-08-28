@@ -87,10 +87,22 @@ if [ "$container_image" = localhost/builder ]; then
 	"$container_engine" build -t "$container_image" "$dir"
 fi
 
-repo="$(./get_repo)"
-commit="$(./get_commit)"
-timestamp="$(./get_timestamp)"
-default_version="$(./get_version)"
+[ -e get_repo ] && repo="$(./get_repo)" || repo="http://deb.debian.org/debian"
+if [ -e get_commit ]
+then
+	commit="$(./get_commit)"
+else
+	pushd $(dirname "${BASH_SOURCE[0]}")
+	if [ -z "$(git status --porcelain 2> /dev/null)" ]
+	then
+		commit=$(git rev-parse HEAD 2> /dev/null)
+	else
+		commit="local"
+	fi
+	popd
+fi
+[ -e get_timestamp ] && timestamp="$(./get_timestamp)" || timestamp="0"
+[ -e get_version ] && default_version="$(./get_version)" || default_version="bookworm"
 
 
 if [ "$resolve_cname" = 1 ]; then
