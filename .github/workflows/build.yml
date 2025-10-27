@@ -71,11 +71,11 @@ jobs:
         run: |
           git tag --force latest
           git push --force origin latest
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: build
           path: download
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: build.config
           path: download
