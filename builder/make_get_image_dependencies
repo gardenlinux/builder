@@ -26,7 +26,7 @@ if [ -f "convert$extension" ]; then
 	input="$artifact_base-$COMMIT.raw"
 fi
 
-IFS=',' read -r -a features < <(./parse_features --feature-dir features --cname "$cname" features)
+IFS=',' read -r -a features < <(./parse_features --allow-frankenstein --feature-dir features --cname "$cname" features)
 
 for feature in "${features[@]}"; do
 	if [ -s "features/$feature/image$extension" ]; then
