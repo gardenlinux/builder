@@ -92,7 +92,7 @@ def main():
 	if len(features_by_type["platform"]) != 1:
 		print(f"{'warning' if args.allow_frankenstein else 'error'}: number of platforms != 1", file=sys.stderr)
 		if not args.allow_frankenstein:
-			printf("hint: use --allow-frankenstein if you truly want to build with an unsupported number of platforms", file=sys.stderr)
+			print("hint: use --allow-frankenstein if you truly want to build with an unsupported number of platforms", file=sys.stderr)
 			sys.exit(1)
 
 	sorted_features = sort_nodes(graph)
