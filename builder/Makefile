@@ -24,6 +24,11 @@ endef
 required_vars := REPO COMMIT TIMESTAMP DEFAULT_VERSION TEMPFS_SIZE
 $(foreach var,$(required_vars),$(eval $(call require_var,$(var))))
 
+PARSE_FEATURES_ARGS :=
+ifdef ALLOW_FRANKENSTEIN
+PARSE_FEATURES_ARGS := --allow-frankenstein
+endif
+
 SHORT_COMMIT := $(shell head -c 8 <<< '$(COMMIT)')
 
 DEFAULT_ARCH := $(shell dpkg --print-architecture)
@@ -48,10 +53,10 @@ clean:
 .build/%-$(SHORT_COMMIT).tar: .build/bootstrap-$$(call cname_arch,$$*)-$$(call cname_version,$$*)-$(SHORT_COMMIT).tar $(shell ./make_directory_sentinel features) $(shell ./make_directory_sentinel cert)
 	target '$@' '$<'
 	info 'configuring rootfs $*-$(SHORT_COMMIT)'
-	features="$$(./parse_features --feature-dir features --cname '$*' features)"
-	features_platforms="$$(./parse_features --feature-dir features --cname '$*' platforms)"
-	features_elements="$$(./parse_features --feature-dir features --cname '$*' elements)"
-	features_flags="$$(./parse_features --feature-dir features --cname '$*' flags)"
+	features="$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$*' features)"
+	features_platforms="$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$*' platforms)"
+	features_elements="$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$*' elements)"
+	features_flags="$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$*' flags)"
 	BUILDER_CNAME='$*'
 	BUILDER_VERSION='$(call cname_version,$*)'
 	BUILDER_ARCH='$(call cname_arch,$*)'
@@ -70,10 +75,10 @@ define artifact_template =
 	input='$$(word 2,$$^)'
 	target '$$@' "$$$$input"
 	info 'building $1 image $$*'
-	features="$$$$(./parse_features --feature-dir features --cname '$$*' features)"
-	features_platforms="$$$$(./parse_features --feature-dir features --cname '$$*' platforms)"
-	features_elements="$$$$(./parse_features --feature-dir features --cname '$$*' elements)"
-	features_flags="$$$$(./parse_features --feature-dir features --cname '$$*' flags)"
+	features="$$$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$$*' features)"
+	features_platforms="$$$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$$*' platforms)"
+	features_elements="$$$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$$*' elements)"
+	features_flags="$$$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$$*' flags)"
 	BUILDER_CNAME='$$*'
 	BUILDER_VERSION='$$(call cname_version,$$*)'
 	BUILDER_ARCH='$$(call cname_arch,$$*)'
@@ -97,7 +102,7 @@ $(foreach artifact_rule,$(shell ./make_get_artifact_rules),$(eval $(call artifac
 		echo "$$(basename "$$f").log" | tee -a '$@'
 	done
 
-%: .build/$$(shell ./parse_features --feature-dir features --default-arch '$$(DEFAULT_ARCH)' --default-version '$$(DEFAULT_VERSION)' --cname '$$*')-$(SHORT_COMMIT).artifacts
+%: .build/$$(shell ./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --default-arch '$$(DEFAULT_ARCH)' --default-version '$$(DEFAULT_VERSION)' --cname '$$*')-$(SHORT_COMMIT).artifacts
 	ln -f -s -r '$<' '.build/$*'
 
 # prevents match anything rule from applying to Makefile and image/convert scripts

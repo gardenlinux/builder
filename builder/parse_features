@@ -20,6 +20,7 @@ def main():
 	parser.add_argument("--version")
 	parser.add_argument("--default-arch")
 	parser.add_argument("--default-version")
+	parser.add_argument("--allow-frankenstein", action="store_true")
 
 	args_type_allowed = [
 		"cname",
@@ -89,7 +90,10 @@ def main():
 		features_by_type[type] = [feature for feature in features if get_node_type(graph.nodes[feature]) == type]
 
 	if len(features_by_type["platform"]) != 1:
-		print("warning: number of platforms != 1", file=sys.stderr)
+		print(f"{'warning' if args.allow_frankenstein else 'error'}: number of platforms != 1", file=sys.stderr)
+		if not args.allow_frankenstein:
+			printf("hint: use --allow-frankenstein if you truly want to build with an unsupported number of platforms", file=sys.stderr)
+			sys.exit(1)
 
 	sorted_features = sort_nodes(graph)
 	minimal_feature_set = get_minimal_feature_set(graph)
