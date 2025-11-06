@@ -27,7 +27,7 @@ apparmor_profile=
 
 while [ $# -gt 0 ]; do
 	case "$1" in
-		--allow-frankenstein)
+		--allow-frankenstein) # https://xkcd.com/1589/
 			allow_frankenstein=1
 			shift
 			;;
