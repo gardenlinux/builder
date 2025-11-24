@@ -5,21 +5,20 @@ shopt -s nullglob
 
 cname="$1"
 
-IFS=',' read -r -a features < <(./parse_features --allow-frankenstein --feature-dir features --cname "$cname" features)
-
-artifacts=(".build/$cname-$COMMIT.tar" ".build/$cname-$COMMIT.release" ".build/$cname-$COMMIT.manifest" ".build/$cname-$COMMIT.requirements")
+IFS=',' read -r -a features < <(gl-features-parse --feature-dir features --default-arch "${NATIVE_ARCH}" --default-version "${DEFAULT_VERSION}-${COMMIT}" --cname "$cname" features)
+artifacts=(".build/$cname.tar" ".build/$cname.release" ".build/$cname.manifest" ".build/$cname.requirements")
 
 for feature in "${features[@]}"; do
 	for i in "features/$feature/"{image,convert}.*; do
 		# get target artifact file extension, usually this is the image/convert script extension
 		# except if the script extension is of the form filename.extA~extB in which case the artifact extension is .extA only
 		extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_~]*)*$' <<< "$i")"
-		artifacts+=(".build/$cname-$COMMIT${extension%~*}")
+		artifacts+=(".build/$cname${extension%~*}")
 	done
 done
 
-if [ "${#artifacts[@]}" = 4 ] && [ -n "$(./parse_features --allow-frankenstein --feature-dir "features" --cname "$cname" platforms)" ]; then
-	artifacts+=(".build/$cname-$COMMIT.raw")
+if [ "${#artifacts[@]}" = 4 ] && [ -n "$(gl-features-parse --feature-dir "features" --default-arch "${NATIVE_ARCH}" --default-version "${DEFAULT_VERSION}-${COMMIT}" --cname "$cname" platforms)" ]; then
+	artifacts+=(".build/$cname.raw")
 fi
 
 echo "${artifacts[@]}"
