@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Repository checkout
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # pin@v4.1.1
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # pin@v4.1.1
         with:
           fetch-depth: 0
 

@@ -17,7 +17,7 @@ jobs:
         with:
           metric_frequency: 1
           comment_on_pr: false
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
         with:
           arch: ${{ matrix.arch }}
@@ -40,7 +40,7 @@ jobs:
         with:
           metric_frequency: 1
           comment_on_pr: false
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: publish builder container images
         if: github.ref == 'refs/heads/main'
         run: |
@@ -66,7 +66,7 @@ jobs:
     needs: push
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: tag latest
         run: |
           git tag --force latest
