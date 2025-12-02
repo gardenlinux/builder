@@ -26,6 +26,7 @@ COPY --from=datefudge /usr/bin/datefudge /usr/bin/datefudge
 COPY --from=resizefat32 /usr/bin/resizefat32 /usr/bin/resizefat32
 RUN curl "https://github.com/gardenlinux/aws-kms-pkcs11/releases/download/latest/aws_kms_pkcs11-$(dpkg --print-architecture).so" -sLo "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
 COPY builder /builder
+RUN python3 -m pip install --break-system-packages -r "/builder/requirements.txt" --root-user-action ignore
 RUN mkdir /builder/cert
 COPY setup_namespace /usr/sbin/setup_namespace
 RUN curl -sSLf https://github.com/gardenlinux/seccomp_fake_xattr/releases/download/latest/seccomp_fake_xattr-$(uname -m).tar.gz \

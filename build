@@ -97,12 +97,9 @@ commit="$(./get_commit)"
 timestamp="$(./get_timestamp)"
 default_version="$(./get_version)"
 
-
 if [ "$resolve_cname" = 1 ]; then
 	arch="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" dpkg --print-architecture)"
-	cname="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" /builder/parse_features --feature-dir /builder/features --default-arch "$arch" --default-version "$default_version" --cname "$1")"
-	short_commit="$(head -c 8 <<< "$commit")"
-	echo "$cname-$short_commit" >&3
+	"$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" gl-cname --feature-dir /builder/features --arch "$arch" --version "${default_version}-${commit}" "$1"
 	exit 0
 fi
 
