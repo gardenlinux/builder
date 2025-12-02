@@ -7,7 +7,7 @@ cname="$1"
 
 IFS=',' read -r -a features < <(./parse_features --allow-frankenstein --feature-dir features --cname "$cname" features)
 
-artifacts=(".build/$cname-$COMMIT.tar" ".build/$cname-$COMMIT.release" ".build/$cname-$COMMIT.manifest" ".build/$cname-$COMMIT.requirements")
+artifacts=(".build/$cname-$COMMIT.tar" ".build/$cname-$COMMIT.release" ".build/$cname-$COMMIT.manifest" ".build/$cname-$COMMIT.sourcemanifest" ".build/$cname-$COMMIT.requirements")
 
 for feature in "${features[@]}"; do
 	for i in "features/$feature/"{image,convert}.*; do
@@ -18,7 +18,7 @@ for feature in "${features[@]}"; do
 	done
 done
 
-if [ "${#artifacts[@]}" = 4 ] && [ -n "$(./parse_features --allow-frankenstein --feature-dir "features" --cname "$cname" platforms)" ]; then
+if [ "${#artifacts[@]}" = 5 ] && [ -n "$(./parse_features --allow-frankenstein --feature-dir "features" --cname "$cname" platforms)" ]; then
 	artifacts+=(".build/$cname-$COMMIT.raw")
 fi
 

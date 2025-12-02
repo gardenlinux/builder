@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+chroot_dir="$(mktemp -d)"
+mount -t tmpfs tmpfs "$chroot_dir"
+tar --extract --xattrs --xattrs-include '*' --directory "$chroot_dir" < "$1"
+
+mount --rbind --make-rslave /proc "$chroot_dir/proc"
+
+#shellcheck disable=SC2016
+chroot "$chroot_dir" dpkg-query --show --showformat='${source:Package}\n' | sort | uniq > "$2"
+
+umount -l "$chroot_dir/proc"
+
+umount "$chroot_dir"
+rmdir "$chroot_dir"

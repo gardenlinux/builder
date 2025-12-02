@@ -106,5 +106,5 @@ $(foreach artifact_rule,$(shell ./make_get_artifact_rules),$(eval $(call artifac
 	ln -f -s -r '$<' '.build/$*'
 
 # prevents match anything rule from applying to Makefile and image/convert scripts
-Makefile image image.release image.manifest image.requirements $(shell find features -name 'convert.*' -o -name image -o -name 'image.*'):
+Makefile image image.release image.manifest image.sourcemanifest image.requirements $(shell find features -name 'convert.*' -o -name image -o -name 'image.*'):
 	true
