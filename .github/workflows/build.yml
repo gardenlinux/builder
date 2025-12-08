@@ -13,11 +13,11 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: gardenlinux/workflow-telemetry-action@v2
+      - uses: gardenlinux/workflow-telemetry-action@9742ad16c70308bc8fa5f850d6ee6b22f2cce076 # v2
         with:
           metric_frequency: 1
           comment_on_pr: false
-      - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: ./.github/actions/setup
         with:
           arch: ${{ matrix.arch }}
@@ -36,11 +36,11 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: gardenlinux/workflow-telemetry-action@v2
+      - uses: gardenlinux/workflow-telemetry-action@9742ad16c70308bc8fa5f850d6ee6b22f2cce076 # v2
         with:
           metric_frequency: 1
           comment_on_pr: false
-      - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: publish builder container images
         if: github.ref == 'refs/heads/main'
         run: |
@@ -50,11 +50,11 @@ jobs:
           podman manifest add ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:arm64-${{ github.sha }}
           podman push ghcr.io/${{ github.repository }}:${{ github.sha }}
           sed -i 's|container_image=localhost/builder|container_image=ghcr.io/${{ github.repository }}:${{ github.sha }}|' build
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: build
           path: build
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: build.config
           path: build.config
@@ -66,16 +66,16 @@ jobs:
     needs: push
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: tag latest
         run: |
           git tag --force latest
           git push --force origin latest
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: build
           path: download
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: build.config
           path: download
