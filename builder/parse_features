@@ -90,7 +90,7 @@ def main():
 		features_by_type[type] = [feature for feature in features if get_node_type(graph.nodes[feature]) == type]
 
 	if len(features_by_type["platform"]) != 1:
-		print(f"{'warning' if args.allow_frankenstein else 'error'}: number of platforms != 1", file=sys.stderr)
+		print(f"{'warning' if args.allow_frankenstein else 'error'}: number of platforms is {len(features_by_type["platform"])}, but should be 1", file=sys.stderr)
 		if not args.allow_frankenstein:
 			print("hint: use --allow-frankenstein if you truly want to build with an unsupported number of platforms", file=sys.stderr)
 			sys.exit(1)
