@@ -50,11 +50,11 @@ jobs:
           podman manifest add ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:arm64-${{ github.sha }}
           podman push ghcr.io/${{ github.repository }}:${{ github.sha }}
           sed -i 's|container_image=localhost/builder|container_image=ghcr.io/${{ github.repository }}:${{ github.sha }}|' build
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: build
           path: build
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: build.config
           path: build.config
