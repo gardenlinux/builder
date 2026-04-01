@@ -101,14 +101,14 @@ The format is:
 - `<advanced args>`: these are additional args parsed by `makepart`. supported options:
   - `type=<type>`: overwrite the default GPT partition type
   - `size=<size>`: instead of dynamically calculating the ideal size for the partition set it explicitly
-  - `syslinux`: mark this as a partition on whith to install syslinux to the FAT32 boot sectors
+  - `syslinux`: mark this as a partition on which to install syslinux to the FAT32 boot sectors
   - `final_partition`: ensure this partition is placed at the end of the partition table regardless of default sorting. if you don't know why you'd need this you likely shouldn't use it!
 
 The `fstab` can be defined with an equally named file in one and only one feature.
 Additionally, other features can apply modifications to this base `fstab`.
 For this features can define executable `fstab.mod` scripts.
-These scripts are executed in the same order as regular config scripts, each recieving the output of the previous script as its input.
-The first script in the series recieves the init `fstab` file.
+These scripts are executed in the same order as regular config scripts, each receiving the output of the previous script as its input.
+The first script in the series receives the init `fstab` file.
 The output of the final file will be used as the effective `fstab`.
 
 > [!IMPORTANT]
