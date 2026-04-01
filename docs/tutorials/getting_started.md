@@ -70,7 +70,7 @@ features:
 > The `info.yaml` file is required for each feature by the builder.
 We'll specify that our `nginx` feature includes the `base` feature.
 This makes sense because the `nginx` feature on its own does not contain a full operating system, so to get a bootable image we include the debian system as it is defined in `base`.
-See [features.md](./features.md) for detailed information on the structure of features.
+See [features documentation](../reference/features.md) for detailed information on the structure of features.
 
 1. Create a file named `pkg.include` inside `features/nginx` with the following content:
 
