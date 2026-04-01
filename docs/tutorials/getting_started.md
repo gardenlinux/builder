@@ -1,3 +1,16 @@
+---
+title: "Builder - Getting Started"
+github_target_path: "docs/reference/supporting_tools/builder/tutorials/getting_started.md"
+migration_status: "new"
+migration_source: ""
+migration_issue: ""
+migration_stakeholder: "@tmangold, @yeoldegrove, @ByteOtter"
+migration_approved: false
+github_org: gardenlinux
+github_repo: builder
+github_source_path: docs/tutorials/getting_started.md
+---
+
 # Getting Started: Creating a Custom Linux Image with Builder
 
 This tutorial will walk you through the process of creating a custom Linux image using the Builder tool.

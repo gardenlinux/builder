@@ -1,3 +1,16 @@
+---
+title: "Builder - Features"
+github_target_path: "docs/reference/supporting_tools/builder/reference/features.md"
+migration_status: "new"
+migration_source: ""
+migration_issue: ""
+migration_stakeholder: "@tmangold, @yeoldegrove, @ByteOtter"
+migration_approved: false
+github_org: gardenlinux
+github_repo: builder
+github_source_path: docs/references/features.md
+---
+
 # Features
 
 Each feature must contain an `info.yaml` file that adheres to the following structure:
