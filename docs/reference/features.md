@@ -1,14 +1,18 @@
 ---
-title: "Builder - Features"
-github_target_path: "docs/reference/supporting_tools/builder/reference/features.md"
-migration_status: "new"
-migration_source: ""
-migration_issue: ""
+title: "Features"
+description: Detailed specification of Features
+related_topics:
+  - /reference/supporting_tools/builder.md
+  - /reference/features/
+  - /how-to/custom-feature
+migration_status: "adapt"
+migration_issue: "https://github.com/gardenlinux/gardenlinux/issues/4600"
 migration_stakeholder: "@tmangold, @yeoldegrove, @ByteOtter"
 migration_approved: false
 github_org: gardenlinux
 github_repo: builder
-github_source_path: docs/references/features.md
+github_source_path: docs/reference/features.md
+github_target_path: docs/reference/features/index.md
 ---
 
 # Features
@@ -17,15 +21,15 @@ Each feature must contain an `info.yaml` file that adheres to the following stru
 
 ## `info.yaml` file structure:
 
-- `description`: (*optional*) A string explaining the purpose or functionality of the feature.
+- `description`: (_optional_) A string explaining the purpose or functionality of the feature.
 - `type`: Can be one of the following:
   - `platform`
   - `element`
   - `flag`
   - While the builder does not make any technical distinctions between these feature types, it is recommended that each image uses only one `platform`, and `flag` should be used for minor changes without including other features.
-- `features`: (*optional*) A sub-structure that contains related features.
-	- `include`: (*optional*) A list of features that will automatically be included if this feature is selected.
-	- `exclude`: (*optional*) A list of features that are incompatible with this feature. If any of these features were implicitly included from another feature, they will be removed from the feature set. If they were explicitly provided as part of the target, the build will fail.
+- `features`: (_optional_) A sub-structure that contains related features.
+  - `include`: (_optional_) A list of features that will automatically be included if this feature is selected.
+  - `exclude`: (_optional_) A list of features that are incompatible with this feature. If any of these features were implicitly included from another feature, they will be removed from the feature set. If they were explicitly provided as part of the target, the build will fail.
 
 Here's an example of an `info.yaml` file:
 
@@ -128,3 +132,7 @@ They take the image artifact created by an image script and output a different f
 Scripts of the form `convert.<ext>` get the raw image as input and produce a `.<ext>` output.
 Scripts of the form `convert.<extA>~<extB>` get `.<extB>` as input and produces `.<extA>` as output.
 The second form is only useful for advanced use cases, if you are not aware of one, you'll probably never need it!
+
+## Related Topics
+
+<RelatedTopics />
