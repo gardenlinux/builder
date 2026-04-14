@@ -1,20 +1,24 @@
 ---
-title: "Builder - Getting Started"
-github_target_path: "docs/reference/supporting_tools/builder/tutorials/getting_started.md"
-migration_status: "new"
-migration_source: ""
-migration_issue: ""
+title: "Building a custom Feature"
+description: Create a custom Feature and build an image with the Builder
+related_topics:
+  - /reference/supporting_tools/builder.md
+  - /reference/features/
+  - /how-to/custom-feature
+migration_status: "adapt"
+migration_issue: "https://github.com/gardenlinux/gardenlinux/issues/4628"
 migration_stakeholder: "@tmangold, @yeoldegrove, @ByteOtter"
 migration_approved: false
 github_org: gardenlinux
 github_repo: builder
-github_source_path: docs/tutorials/getting_started.md
+github_source_path: docs/how-to/custom-feature.md
+github_target_path: "docs/how-to/custom-feature.md"
 ---
 
-# Getting Started: Creating a Custom Linux Image with Builder
+# Create a custom Feature and build an image with the Builder
 
-This tutorial will walk you through the process of creating a custom Linux image using the Builder tool.
-We will start with the Builder example repository and build a *feature* to add an [`nginx` HTTP server](https://nginx.org/en/) to our image.
+This How-To will walk you through the process of creating a custom Linux image using the Builder tool.
+We will start with the Builder example repository and build a _feature_ to add an [`nginx` HTTP server](https://nginx.org/en/) to our image.
 
 Let's begin by creating a new GitHub repository based on the Builder example repository using this link:
 
@@ -53,9 +57,9 @@ mkdir features/nginx
 ```
 
 > This is where our nginx feature will live.
-Features are a concept of the builder that allows us to build variants of images.
-For example, if we wanted to add an alternative HTTP server later, we could add an `apacheHttpd` feature.
-At image build time, we could pick if we want the `nginx` or the `apacheHttpd` feature.
+> Features are a concept of the builder that allows us to build variants of images.
+> For example, if we wanted to add an alternative HTTP server later, we could add an `apacheHttpd` feature.
+> At image build time, we could pick if we want the `nginx` or the `apacheHttpd` feature.
 
 2. Create a file named `info.yaml` inside `features/nginx` and edit it with the content below:
 
@@ -68,16 +72,15 @@ features:
 ```
 
 > The `info.yaml` file is required for each feature by the builder.
-We'll specify that our `nginx` feature includes the `base` feature.
-This makes sense because the `nginx` feature on its own does not contain a full operating system, so to get a bootable image we include the debian system as it is defined in `base`.
-See [features documentation](../reference/features.md) for detailed information on the structure of features.
+> We'll specify that our `nginx` feature includes the `base` feature.
+> This makes sense because the `nginx` feature on its own does not contain a full operating system, so to get a bootable image we include the debian system as it is defined in `base`.
+> See [features documentation](/reference/features/) for detailed information on the structure of features.
 
 1. Create a file named `pkg.include` inside `features/nginx` with the following content:
 
 ```
 nginx
 ```
-
 
 > `pkg.include` is a list of packages this feature needs, each feature on a new line.
 
@@ -91,9 +94,8 @@ set -eufo pipefail
 systemctl enable nginx
 ```
 
-
 > `exec.config` is a shell script we can use to customize our image.
-In this case, we [enable the systemd unit for nginx](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html#enable%20UNIT…) which makes nginx start on boot.
+> In this case, we [enable the systemd unit for nginx](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html#enable%20UNIT…) which makes nginx start on boot.
 
 5. Make the `exec.config` file executable:
 
@@ -107,7 +109,6 @@ chmod +x features/nginx/exec.config
 mkdir -p features/nginx/file.include/var/www/html
 ```
 
-
 > The `file.include` directory allows us to merge files and directories into the root filesystem of our image.
 
 7. Create a dummy `index.html` file inside `features/nginx/file.include/var/www/html` with content like the following (or customize it as desired):
@@ -115,9 +116,9 @@ mkdir -p features/nginx/file.include/var/www/html
 ```html
 <!DOCTYPE html>
 <html>
-	<body>
-		<p>Hello World!</p>
-	</body>
+  <body>
+    <p>Hello World!</p>
+  </body>
 </html>
 ```
 
@@ -137,7 +138,7 @@ If everything worked as intended, you should see the system boot up. Once the sy
 
 To also build the new image on GitHub Actions, we'll need to modify the `.github/workflows/build.yml` file.
 
-Let's change the *build* step to include the `nginx` feature we just created, and let's upload our built image to GitHub's artifact storage:
+Let's change the _build_ step to include the `nginx` feature we just created, and let's upload our built image to GitHub's artifact storage:
 
 ```diff
 diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
@@ -159,3 +160,7 @@ index 181a646..9e4261e 100644
 Now commit and push your changes and GitHub will build the image for you.
 
 Congratulations! You have successfully created your first feature for the Builder and setup a CI Pipeline to build the image. :tada:
+
+## Related Topics
+
+<RelatedTopics />
