@@ -1,0 +1,189 @@
+#!/usr/bin/env python3
+"""
+Generate a CycloneDX 1.5 SBOM (JSON) from installed dpkg packages.
+Usage:
+    dpkg_to_cyclonedx [--input file.csv] [--output sbom.json]
+"""
+
+import subprocess
+import argparse
+import uuid
+import sys
+import platform
+import json
+
+from typing import Any
+
+from datetime import datetime, timezone
+from pathlib import Path
+from dataclasses import dataclass
+
+VERSION="1.0.0"
+
+DPKG_FIELDS = "\t".join([
+    "${Package}",
+    "${Version}",
+    "${Architecture}",
+    "${Homepage}",
+    "${Maintainer}",
+    "${source:Package}",
+    "${source:Version}",
+])
+
+@dataclass
+class Package:
+    """fields see https://man7.org/linux/man-pages/man1/dpkg-query.1.html"""
+    package: str
+    version: str
+    arch: str
+    homepage: str
+    maintainer: str
+    srcPackage: str
+    srcVersion: str
+
+@dataclass
+class BuilderMetadata:
+    cname: str
+    version: str
+    arch: str
+    features: str
+    timestamp: int
+
+def read_packages(input_file: Path|None) -> list[Package]:
+    """Execute dpkg-query to evaluate packages"""
+    output: str = ""
+
+    if input_file:
+        with open(input_file, 'r') as f:
+            output = f.read()
+    else:
+        result = subprocess.run(["dpkg-query", "--show", f"--show-fields='{DPKG_FIELDS}\n'"], capture_output=True, text=True, check=True)
+
+        if result.returncode != 0:
+            raise ValueError("dpkg-query failed with rc=%d", [result.returncode])
+        
+        output = result.stdout
+
+    return parse_dpkg(output)
+
+def parse_dpkg(output: str) -> list[Package]:
+    """Parse output to list of packages"""
+    packages: list[Package] = []
+
+    for line in output.splitlines():
+        parts = line.split("\t") # default delimiter with dpkg-query
+        if len(parts) != 7:
+            continue
+
+        package = Package(package=parts[0], version=parts[1], arch=parts[2], homepage=parts[3], maintainer=parts[4], srcPackage=parts[5], srcVersion=parts[6])
+        packages.append(package)
+
+    return packages
+
+def pkg_to_component(pkg: Package) -> dict[str, Any]:
+    purl = f"pkg:deb/gardenlinux/{pkg.srcPackage}@{pkg.srcVersion}?arch={pkg.arch}"
+
+    # TODO: add swid
+    component = {
+        "type": "library",
+        "bom-ref": f"{pkg.package}@{pkg.version}",        
+        "name": pkg.srcPackage,
+        "version": pkg.srcVersion,
+        "description": "",
+        "licenses": [],
+        "purl": purl,
+        "hashes": [],
+        "cpe": "",
+        "externalReferences": []
+    }
+
+    if pkg.homepage:
+        homepageRef = {
+            "type": "website",
+            "url": pkg.homepage
+        }
+        component["externalReferences"].append(homepageRef)
+
+    return component
+
+def build_sbom(packages: list[Package], builderMetadata: BuilderMetadata) -> dict[str, Any]:
+    """Assemble the full CycloneDX 1.5 BOM document. See https://github.com/CycloneDX/specification/blob/master/schema/bom-1.7.schema.json"""
+    now = datetime.now(timezone.utc).isoformat()
+    serial = f"urn:uuid:{uuid.uuid4()}"
+
+    components = [pkg_to_component(p) for p in packages]
+
+    # TODO: add swid
+    bom = {
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.7",
+        "serialNumber": serial,
+        "version": 1,
+        "metadata": {
+            "timestamp": now,
+            "tools": [
+                {
+                    "vendor": "GardenLinux",
+                    "name": sys.argv[0],
+                    "version": VERSION
+                }
+            ],
+            "component": {
+                "type": "operating-system",
+                "name": "GardenLinux",
+                "version": builderMetadata.version,
+                "description": builderMetadata.cname,
+                "cpe": "",
+                "properties": [
+                    {
+                        "name": "cname",
+                        "value": builderMetadata.cname
+                    },
+                    {
+                        "name": "arch",
+                        "value": builderMetadata.arch
+                    },
+                    {
+                        "name": "features",
+                        "value": builderMetadata.features
+                    },
+                    {
+                        "name": "build timestamp",
+                        "value": datetime.fromtimestamp(builderMetadata.timestamp).strftime('%Y-%m-%dT%H:%M:%SZ')
+                    }
+                ]
+            },
+            "lifecycles": [
+                {
+                    "phase": "post-build"
+                }
+            ]         
+        },
+        "components": components
+    }
+
+    return bom
+
+def dpkg_to_cyclonedx(input_file: Path|None, builderMetadata: BuilderMetadata) -> dict[str, Any]:
+    """read packages and convert output to cyclonedx"""
+    packages = read_packages(input_file)
+    return build_sbom(packages=packages, builderMetadata=builderMetadata)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate CycloneDX SBOM from dpkg")
+    parser.add_argument("--input", default=None, help="Use an csv file as input instead of dpkg-query output")
+    parser.add_argument("--output", default="sbom.json", help="Output file (default: sbom.json)")
+    parser.add_argument("--builder_features", default="", help="GardenLinux image features present in the image at hand")
+    parser.add_argument("--builder_cname", default="", help="Cname")
+    parser.add_argument("--builder_arch", default="", help="Architecture")
+    parser.add_argument("--builder_version", default="", help="Version")
+    parser.add_argument("--builder_unixtimestamp", type=int, default="0", help="Unix-Timestamp of build time")
+    args = parser.parse_args()
+
+    builderMetadata = BuilderMetadata(cname=args.builder_cname, version=args.builder_version, arch=args.builder_arch, features=args.builder_features, timestamp=args.builder_unixtimestamp)
+
+    sbom = dpkg_to_cyclonedx(input_file=Path(args.input), builderMetadata=builderMetadata)
+    with open(Path(args.output), "w", encoding="utf-8") as f:
+        json.dump(sbom, f, indent=2, ensure_ascii=False)
+
+    print(f"created sbom with {len(sbom["components"])} packages")
