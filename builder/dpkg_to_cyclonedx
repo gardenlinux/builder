@@ -167,8 +167,6 @@ def build_sbom(packages: list[Package], builderMetadata: BuilderMetadata) -> dic
 def dpkg_to_cyclonedx(input_file: Path|None, builderMetadata: BuilderMetadata) -> dict[str, Any]:
     """read packages and convert output to cyclonedx"""
     packages = read_packages(input_file)
-    print(f"read {len(packages)} packages")
-
     return build_sbom(packages=packages, builderMetadata=builderMetadata)
 
 if __name__ == "__main__":
@@ -187,3 +185,5 @@ if __name__ == "__main__":
     sbom = dpkg_to_cyclonedx(input_file=Path(args.input), builderMetadata=builderMetadata)
     with open(Path(args.output), "w", encoding="utf-8") as f:
         json.dump(sbom, f, indent=2, ensure_ascii=False)
+
+    print(f"created sbom with {len(sbom["components"])} packages")
