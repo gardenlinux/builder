@@ -68,7 +68,7 @@ This section covers adding a custom feature to the [Garden Linux](https://github
 
 ### Key difference: platform requirement
 
-Garden Linux enforces exactly one `platform` feature per build (see [ADR 0020](../reference/adr/0020-enforce-single-platform-by-default-in-builder.md)). This means:
+Garden Linux enforces exactly one `platform` feature per build (see [ADR 0020](/reference/adr/0020-enforce-single-platform-by-default-in-builder.md)). This means:
 
 - Running `./build base` **fails** because `base` is an `element`, not a `platform`.
 - Running `./build myfeature` **fails** unless `myfeature` is a platform.
