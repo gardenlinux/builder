@@ -17,7 +17,7 @@ github_target_path: docs/how-to/custom-feature.md
 
 # Create a custom Feature and build an image with the Builder
 
-The [Builder](https://github.com/gardenlinux/builder) is a generic, containerized tool for building Linux system images from config directories. It is reusable by any project that needs to create customized Linux distributions.
+The [Builder](/explanation/builder) is a generic, containerized tool for building Linux system images from config directories. It is reusable by any project that needs to create customized Linux distributions.
 
 This guide covers two scenarios:
 
