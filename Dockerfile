@@ -15,8 +15,8 @@ RUN make -C resizefat32 install
 
 FROM debian:testing AS syft
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget jq
-RUN wget --quiet https://github.com/anchore/syft/releases/download/v1.44.0/syft_1.44.0_linux_amd64.deb
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends ./syft_1.44.0_linux_amd64.deb
+RUN wget --quiet https://github.com/anchore/syft/releases/download/v1.44.0/syft_1.44.0_linux_$(dpkg --print-architecture).deb
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends ./syft_1.44.0_linux_$(dpkg --print-architecture).deb
 
 FROM debian:testing
 
