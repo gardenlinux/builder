@@ -13,6 +13,11 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 RUN git clone https://github.com/gardenlinux/resizefat32
 RUN make -C resizefat32 install
 
+FROM debian:testing AS syft
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget jq
+RUN wget --quiet https://github.com/anchore/syft/releases/download/v1.44.0/syft_1.44.0_linux_amd64.deb
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends ./syft_1.44.0_linux_amd64.deb
+
 FROM debian:testing
 
 LABEL org.opencontainers.image.source="https://github.com/gardenlinux/builder"
@@ -24,6 +29,7 @@ COPY --from=mv_data /usr/bin/mv_data /usr/bin/mv_data
 COPY --from=datefudge /usr/lib/datefudge/datefudge.so /usr/lib/datefudge/datefudge.so
 COPY --from=datefudge /usr/bin/datefudge /usr/bin/datefudge
 COPY --from=resizefat32 /usr/bin/resizefat32 /usr/bin/resizefat32
+COPY --from=syft /usr/bin/syft /usr/bin/syft
 RUN curl "https://github.com/gardenlinux/aws-kms-pkcs11/releases/download/latest/aws_kms_pkcs11-$(dpkg --print-architecture).so" -sLo "/usr/lib/$(uname -m)-linux-gnu/pkcs11/aws_kms_pkcs11.so"
 COPY builder /builder
 RUN mkdir /builder/cert

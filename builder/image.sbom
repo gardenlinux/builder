@@ -9,10 +9,26 @@ tar --extract --xattrs --xattrs-include '*' --directory "$chroot_dir" < "$1"
 mount --rbind --make-rslave /proc "$chroot_dir/proc"
 
 # build cyclonedx sbom
-tmpfile="$(mktemp --suffix '.dpkg.csv')"
-#shellcheck disable=SC2016
-chroot "$chroot_dir" dpkg-query --show --showformat='${binary:Package}\t${Version}\t${Architecture}\t${Homepage}\t${Maintainer}\t${source:Package}\t${source:Version}\n' > "$tmpfile"
-./dpkg_to_cyclonedx --input "$tmpfile" --output "$2" --builder_features "$BUILDER_FEATURES" --builder_cname "$BUILDER_CNAME" --builder_arch "$BUILDER_ARCH" --builder_version "$BUILDER_VERSION" --builder_unixtimestamp "$BUILDER_TIMESTAMP"
+SYFT_CACHE_DIR="$chroot_dir"/syft-cache syft --quiet "$1" --config syft.yaml --output cyclonedx-json | jq \
+  --arg cname "$BUILDER_CNAME" \
+  --arg arch "$BUILDER_ARCH" \
+  --arg version "$BUILDER_VERSION" \
+  --arg features "$BUILDER_FEATURES" \
+  --arg builder_timestamp "$BUILDER_TIMESTAMP" \
+  --arg cpe "" \
+  '.metadata.lifecycles = [{"phase": "post-build"}] |
+   .metadata.component = {
+    "type": "operating-system",
+    "name": "GardenLinux",
+    "version": $version,
+    "cpe": $cpe,
+    "properties": [
+      {"name": "cname", "value": $cname},
+      {"name": "arch", "value": $arch},
+      {"name": "features", "value": $features},
+      {"name": "build timestamp", "value": $builder_timestamp}
+    ]
+  }' > "$2"
 
 umount -l "$chroot_dir/proc"
 
