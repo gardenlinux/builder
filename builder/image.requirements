@@ -1,21 +1,33 @@
 #!/usr/bin/env bash
 
-set -eufo pipefail
+set -euo pipefail
 
-uefi=false
-secureboot=false
-tpm2=false
+features_dir="${FEATURES_DIR:-/builder/features}"
 
-IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
-for feature in "${features[@]}"; do
-	if [ -e "/builder/features/$feature/requirements.mod" ]; then
-		source "/builder/features/$feature/requirements.mod"
-	fi
+# Scan all requirements.mod files to find all possible modifiers and set defaults
+for req_mod in "$features_dir"/*/requirements.mod; do
+	[ -e "$req_mod" ] || continue
+	while IFS='=' read -r key _; do
+		[[ $key =~ ^[a-z_][a-z0-9_]*$ ]] && declare "$key=false"
+	done < <(grep -E '^[a-z_][a-z0-9_]*=' "$req_mod")
 done
 
-cat > "$2" << EOF
-arch=$BUILDER_ARCH
-uefi=$uefi
-secureboot=$secureboot
-tpm2=$tpm2
-EOF
+# Source requirements.mod files for selected features to override defaults
+IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
+for feature in "${features[@]}"; do
+	[ -z "$feature" ] && continue
+	req_file="$features_dir/$feature/requirements.mod"
+	# shellcheck source=/dev/null
+	[ -e "$req_file" ] && source "$req_file"
+done
+
+# Output all modifiers
+{
+	echo "arch=$BUILDER_ARCH"
+	for req_mod in "$features_dir"/*/requirements.mod; do
+		[ -e "$req_mod" ] || continue
+		while IFS='=' read -r key _; do
+			[[ $key =~ ^[a-z_][a-z0-9_]*$ ]] && echo "$key=${!key}"
+		done < <(grep -E '^[a-z_][a-z0-9_]*=' "$req_mod")
+	done | sort -u
+} > "$2"
