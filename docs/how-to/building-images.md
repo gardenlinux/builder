@@ -22,27 +22,27 @@ github_target_path: "docs/how-to/building-images.md"
 
 # Building Images
 
-This guide walks you through building Garden Linux images locally. For conceptual background on
-how the build system works, see [Builder Explanation](/explanation/builder).
+This guide walks you through building Garden Linux images locally. For
+conceptual background on how the build system works, see
+[Builder Explanation](/explanation/builder).
 
 ## Prerequisites
 
-:::warning
-Provide at least **8 GiB of RAM** to the container runtime or the virtual machine hosting it
-(in Podman Desktop or Docker Desktop). The build may fail silently if memory is insufficient.
-:::
+:::warning Provide at least **8 GiB of RAM** to the container runtime or the
+virtual machine hosting it (in Podman Desktop or Docker Desktop). The build may
+fail silently if memory is insufficient. :::
 
 You need a working container engine. Three options are supported:
 
 - **Rootless Podman** (recommended) — See the
   [Podman rootless setup guide](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
   for setup instructions.
-- **Sudo Podman** — Use Podman with `sudo` for elevated privileges.
-- **Docker** — Use Docker.
+- **Podman** with `root` privileges
+- **Rooless Docker** - See the
+  [Docker Rootless Mode Documentation](https://docs.docker.com/engine/security/rootless/)
 
-:::info
-See [Builder Command-Line Reference](/reference/builder#options) how to pass the container engine.
-:::
+:::info See [Builder Command-Line Reference](/reference/builder#options) how to
+pass the container engine. :::
 
 ## Build an Image
 
@@ -54,10 +54,12 @@ Run the build script with the target flavor name:
 
 Where:
 
-- `${platform}` — the target platform (e.g. `kvm`, `metal`, `aws`); must be the first component.
-- `${featureX}` — one or more features from the `features/` directory, separated by `-`
-  (or `_` for features whose names begin with `_`).
-- `${arch}` — optional target architecture (`amd64` or `arm64`); must be the last component.
+- `${platform}` — the target platform (e.g. `kvm`, `metal`, `aws`); must be the
+  first component.
+- `${featureX}` — one or more features from the `features/` directory, separated
+  by `-` (or `_` for features whose names begin with `_`).
+- `${arch}` — optional target architecture (`amd64` or `arm64`); must be the
+  last component.
 
 Examples:
 
@@ -69,7 +71,8 @@ Examples:
 For a full list of build script options, see the
 [Builder Command-Line Reference](/reference/builder).
 
-For help choosing a flavor name, see [Choosing Flavors](/how-to/choosing-flavors).
+For help choosing a flavor name, see
+[Choosing Flavors](/how-to/choosing-flavors).
 
 ## Run Parallel Builds
 
@@ -79,10 +82,9 @@ To build multiple targets simultaneously, use the `-j` flag:
 ./build -j 4 kvm-amd64 kvm-arm64 aws-gardener_prod-amd64 aws-gardener_prod-arm64
 ```
 
-:::warning
-Parallel builds multiply memory usage. Allow at least **8 GiB per thread**. There are no
-safeguards against memory exhaustion; builds may fail silently if memory runs out.
-:::
+:::warning Parallel builds multiply memory usage. Allow at least **8 GiB per
+thread**. There are no safeguards against memory exhaustion; builds may fail
+silently if memory runs out. :::
 
 ## Build for a Different Architecture
 
@@ -93,33 +95,31 @@ Append the target architecture to the flavor name:
 ```
 
 :::info
-[Cross-architecture builds](/explanation/builder#cross-architecture-builds) require
-[binfmt_misc](https://docs.kernel.org/admin-guide/binfmt-misc.html) handlers and QEMU
-user-mode emulation (`qemu-user-static`) on the build host.
+[Cross-architecture builds](/explanation/builder#cross-architecture-builds)
+require [binfmt_misc](https://docs.kernel.org/admin-guide/binfmt-misc.html)
+handlers and QEMU user-mode emulation (`qemu-user-static`) on the build host.
 
 ```bash
 apt install qemu-user-static
 ```
-:::
 
+:::
 
 ## Build Secureboot / Trustedboot / TPM2 Images
 
-Before building any image with the `_tpm2`, `_trustedboot`, or `_secureboot` feature, generate
-the signing certificates:
+Before building any image with the `_tpm2`, `_trustedboot`, or `_secureboot`
+feature, generate the signing certificates:
 
 ```bash
 ./cert/build
 ```
 
-:::tip
-Do not use the `Makefile` in `cert/` directly. Always use `./cert/build`.
-If `./cert/build` fails, try running `./cert/build clean` first.
-:::
+:::tip Do not use the `Makefile` in `cert/` directly. Always use `./cert/build`.
+If `./cert/build` fails, try running `./cert/build clean` first. :::
 
-By default, private keys are stored locally in the `cert/` directory. To use AWS Key Management
-Service instead, pass the `--kms` flag (valid AWS credentials must be configured via the standard
-AWS environment variables):
+By default, private keys are stored locally in the `cert/` directory. To use AWS
+Key Management Service instead, pass the `--kms` flag (valid AWS credentials
+must be configured via the standard AWS environment variables):
 
 ```bash
 ./cert/build --kms
@@ -132,9 +132,10 @@ After generating certificates, build the image as normal:
 ./build aws-trustedboot_tpm2
 ```
 
-For conceptual background on these features, see [Boot Modes](/explanation/boot-modes) and
-[Secure Boot and Trusted Boot](/explanation/secure-boot). For cloud deployment steps, see
-[Deploying Secure Boot Images](/how-to/secure-boot).
+For conceptual background on these features, see
+[Boot Modes](/explanation/boot-modes) and
+[Secure Boot and Trusted Boot](/explanation/secure-boot). For cloud deployment
+steps, see [Deploying Secure Boot Images](/how-to/secure-boot).
 
 ## Troubleshooting
 
