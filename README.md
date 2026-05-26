@@ -1,16 +1,28 @@
 # Builder
 
-The Builder is a powerful tool for effortlessly building Linux system images
-based on config directories. It serves as the primary build tooling for the
-[gardenlinux](https://github.com/gardenlinux/gardenlinux) project.
+Garden Linux images are produced by Builder, a dedicated build tool maintained
+separately from the main
+[gardenlinux/gardenlinux](https://github.com/gardenlinux/gardenlinux)
+repository. This separation means the build infrastructure can evolve
+independently of the distribution content.
 
-By default, the Builder runs inside rootless Podman, enabling building without
-requiring elevated permissions.
+The `./build` script in the `gardenlinux/gardenlinux` repository is the primary
+entry point. It automatically fetches the correct builder container image, then
+delegates all internal build steps to it. As a result, the only hard dependency
+on the host system is a working container engine — no specific Linux
+distribution, compiler toolchain, or package set is required on the build host.
 
 ## Documentation
 
-To learn how to use or contribute to Builder, refer to our
-[Documentation](https://gardenlinux-docs.netlify.app/reference/supporting_tools/builder.html)
+For
+[explanations](https://gardenlinux-docs.netlify.app/explanation/builder.html) on
+the structure of our build system,
+[references](https://gardenlinux-docs.netlify.app/reference/builder.html) of
+builder's CLI interface and detailed
+[how-to guides](https://gardenlinux-docs.netlify.app/how-to/building-images.html)
+on how to build images for different
+[flavors](https://gardenlinux-docs.netlify.app/explanation/flavors.html), visit
+our [documentation](https://gardenlinux-docs.netlify.app/).
 
 # Community
 
