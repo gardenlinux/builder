@@ -1,21 +1,41 @@
 #!/usr/bin/env bash
 
-set -eufo pipefail
+set -euo pipefail
 
-uefi=false
-secureboot=false
-tpm2=false
+features_dir="${FEATURES_DIR:-/builder/features}"
 
-IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
-for feature in "${features[@]}"; do
-	if [ -e "/builder/features/$feature/requirements.mod" ]; then
-		source "/builder/features/$feature/requirements.mod"
-	fi
+# Built-in keys. requirements.mod scripts may extend this array via:
+#   requirements_keys+=(mykey)
+#   mykey=true
+requirements_keys=(arch)
+export arch="$BUILDER_ARCH"
+
+# Pass 1: source every requirements.mod to discover all keys any feature
+# may contribute, then reset discovered keys to "false" as defaults.
+# This ensures output keys are stable regardless of which features are selected.
+for req_mod in "$features_dir"/*/requirements.mod; do
+	[ -e "$req_mod" ] || continue
+	# shellcheck source=/dev/null
+	source "$req_mod"
 done
 
-cat > "$2" << EOF
-arch=$BUILDER_ARCH
-uefi=$uefi
-secureboot=$secureboot
-tpm2=$tpm2
-EOF
+# Reset all discovered (non-arch) keys to false as defaults for pass 2.
+for key in "${requirements_keys[@]}"; do
+	[ "$key" = arch ] && continue
+	declare "$key=false"
+done
+
+# Pass 2: source only the selected features' requirements.mod files,
+# allowing them to override the defaults set above.
+IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
+for feature in "${features[@]}"; do
+	[ -z "$feature" ] && continue
+	req_mod="$features_dir/$feature/requirements.mod"
+	# shellcheck source=/dev/null
+	[ -e "$req_mod" ] && source "$req_mod"
+done
+
+# Emit each key alphabetically (duplicates silently dropped by sort -u).
+for key in "${requirements_keys[@]}"; do
+	printf '%s=%s\n' "$key" "${!key}"
+done | sort -u -t= -k1,1 > "$2"
