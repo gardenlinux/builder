@@ -14,9 +14,12 @@ RUN git clone https://github.com/gardenlinux/resizefat32
 RUN make -C resizefat32 install
 
 FROM debian:testing AS syft
+ARG SYFT_RELEASE="1.44.0"
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget jq
-RUN wget --quiet https://github.com/anchore/syft/releases/download/v1.44.0/syft_1.44.0_linux_$(dpkg --print-architecture).deb
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends ./syft_1.44.0_linux_$(dpkg --print-architecture).deb
+RUN wget --quiet https://github.com/anchore/syft/releases/download/v${SYFT_RELEASE}/syft_${SYFT_RELEASE}_checksums.txt
+RUN wget --quiet https://github.com/anchore/syft/releases/download/v${SYFT_RELEASE}/syft_${SYFT_RELEASE}_linux_$(dpkg --print-architecture).deb
+RUN sha256sum --ignore-missing --check syft_${SYFT_RELEASE}_checksums.txt
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends ./syft_${SYFT_RELEASE}_linux_$(dpkg --print-architecture).deb
 
 FROM debian:testing
 
