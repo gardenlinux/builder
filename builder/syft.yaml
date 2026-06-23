@@ -1,0 +1,10 @@
+catalogers:
+  - dpkg-db-cataloger
+
+format:
+  cyclonedx-json:
+    pretty: true
+
+package:
+  search-indexed-archives: true
+  search-unindexed-archives: true

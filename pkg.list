@@ -16,6 +16,7 @@ gnupg2
 libcurl4
 libengine-pkcs11-openssl
 libjson-c5
+jq
 make
 mmdebstrap
 mtools

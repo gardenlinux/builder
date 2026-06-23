@@ -66,6 +66,13 @@ ln -f -s ../builder/build build
 
 Now you can make your modifications inside the builder directory and running `./build ${target}` inside the gardenlinux repo will use the local builder, rebuilding the build container if necessary.
 
+
+If you want to use a modified builder docker image, you can edit your changes into the `Dockerfile` and run the image build with
+```
+cd gardenlinux
+./build --container-image localhost/builder aws-gardener_prod
+```
+
 ## Licensing
 
 Copyright 2025 SAP SE or an SAP affiliate company and GardenLinux contributors. Please see our [LICENSE](LICENSE) for
