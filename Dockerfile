@@ -14,11 +14,22 @@ RUN git clone https://github.com/gardenlinux/resizefat32
 RUN make -C resizefat32 install
 
 FROM debian:testing AS syft
-ARG SYFT_RELEASE="1.44.0"
+ARG SYFT_RELEASE="1.45.1"
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget jq
-RUN wget --quiet https://github.com/anchore/syft/releases/download/v${SYFT_RELEASE}/syft_${SYFT_RELEASE}_checksums.txt
+# getting checksums and signatures and unpack
+COPY syft_${SYFT_RELEASE}_checksums.txt /syft_${SYFT_RELEASE}_checksums.txt
+COPY syft_${SYFT_RELEASE}_checksums.txt.sig /syft_${SYFT_RELEASE}_checksums.txt.sig
+COPY syft_${SYFT_RELEASE}_checksums.txt.pem /syft_${SYFT_RELEASE}_checksums.txt.pem
+# unpack
+RUN base64 -d /syft_${SYFT_RELEASE}_checksums.txt.sig > /syft_${SYFT_RELEASE}_checksums.txt.sig.unpacked
+RUN base64 -d syft_${SYFT_RELEASE}_checksums.txt.pem | openssl x509 -pubkey > /syft_${SYFT_RELEASE}_checksums.txt.pem.unpacked
+# verify
+RUN openssl dgst -verify /syft_${SYFT_RELEASE}_checksums.txt.pem.unpacked -signature /syft_${SYFT_RELEASE}_checksums.txt.sig.unpacked syft_${SYFT_RELEASE}_checksums.txt
+# get syft
 RUN wget --quiet https://github.com/anchore/syft/releases/download/v${SYFT_RELEASE}/syft_${SYFT_RELEASE}_linux_$(dpkg --print-architecture).deb
-RUN sha256sum --ignore-missing --check syft_${SYFT_RELEASE}_checksums.txt
+# verify checksum
+RUN sha256sum --ignore-missing --check /syft_${SYFT_RELEASE}_checksums.txt
+# install
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends ./syft_${SYFT_RELEASE}_linux_$(dpkg --print-architecture).deb
 
 FROM debian:testing
