@@ -73,6 +73,10 @@ cd gardenlinux
 ./build --container-image localhost/builder aws-gardener_prod
 ```
 
+## SBOM Generation
+
+After image build time a Software Bill of Materials (SBOM) is created in CycloneDX JSON-format. To produce the SBOM a tool called `syft` is downloaded during build container time. To verify the integrity the offloaded checksums file is included in the builder's directory. To update to a newer syft-release update the container ARG in the `Dockerfile` and update the checksums-file for this release as well.
+
 ## Licensing
 
 Copyright 2025 SAP SE or an SAP affiliate company and GardenLinux contributors. Please see our [LICENSE](LICENSE) for
