@@ -38,7 +38,7 @@ A feature is not just a package list, but a complete configuration unit that may
 - **Scripts** — Setup and lifecycle scripts
 - **Dependencies** — A list of other features to include or exclude
 
-For example, the `gardener` element feature does not just install `containerd` — it also configures systemd services and includes other features such as `log` to set up logging.
+For example, the [`gardener`](/reference/features/gardener) element feature does not just install `containerd` — it also configures systemd services and includes other features such as [`log`](/reference/features/log) to set up logging.
 
 ## Feature Types
 
@@ -48,9 +48,9 @@ The three feature types are defined in [ADR 0034](/reference/adr/0034-feature-te
 
 | Type         | Description                                                                                                                                                                                                                     | Examples                                                  |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| **platform** | Represents the deployment target — the combination of hardware, firmware, and cloud or hypervisor environment the image is intended to run on.                                                                                  | `aws`, `azure`, `gcp`, `kvm`, `baremetal`, `container`    |
-| **element**  | Represents a functional component or capability added on top of the platform. Elements are composable: multiple elements may be present in a single build.                                                                      | `gardener`, `server`, `cloud`, `cis`, `firewall`, `metal` |
-| **flag**     | Represents a lightweight modifier. Flags are identified by a leading underscore (`_`) in their name. Flags are intended for minor behavioural changes that do not warrant a full element and should not include other features. | `_prod`, `_fips`, `_trustedboot`, `_usi`                  |
+| **platform** | Represents the deployment target — the combination of hardware, firmware, and cloud or hypervisor environment the image is intended to run on.                                                                                  | [`aws`](/reference/features/aws), [`azure`](/reference/features/azure), [`gcp`](/reference/features/gcp), [`kvm`](/reference/features/kvm), [`baremetal`](/reference/features/baremetal), [`container`](/reference/features/container)    |
+| **element**  | Represents a functional component or capability added on top of the platform. Elements are composable: multiple elements may be present in a single build.                                                                      | [`gardener`](/reference/features/gardener), [`server`](/reference/features/server), [`cloud`](/reference/features/cloud), [`cis`](/reference/features/cis), [`firewall`](/reference/features/firewall), [`metal`](/reference/features/metal) |
+| **flag**     | Represents a lightweight modifier. Flags are identified by a leading underscore (`_`) in their name. Flags are intended for minor behavioural changes that do not warrant a full element and should not include other features. | [`_prod`](/reference/features/_prod), [`_fips`](/reference/features/_fips), [`_trustedboot`](/reference/features/_trustedboot), [`_usi`](/reference/features/_usi)                  |
 
 :::tip
 A complete list of features can be seen in the [Features Reference](/reference/features/).
@@ -65,10 +65,10 @@ When you specify features for a build, the builder resolves the complete feature
 3. Remove any features listed in `features.exclude` lists (but only if they were transitively included)
 4. Validate that the result forms a valid DAG (no cycles, no conflicts)
 
-For example, if you request `aws` and `gardener`:
+For example, if you request [`aws`](/reference/features/aws) and [`gardener`](/reference/features/gardener):
 
-- The `aws` platform feature includes dependencies for cloud-init, kernel modules, etc.
-- The `gardener` element feature includes the `log` feature for logging configuration
+- The [`aws`](/reference/features/aws) platform feature includes dependencies for cloud-init, kernel modules, etc.
+- The [`gardener`](/reference/features/gardener) element feature includes the [`log`](/reference/features/log) feature for logging configuration
 - Both features exclude certain features that are incompatible with their use case
 - The builder resolves the complete set and validates there are no conflicts
 
@@ -90,7 +90,7 @@ When a frankenstein build is created, the `GARDENLINUX_PLATFORM` value in `/etc/
 
 ## Feature Resolution in `/etc/os-release`
 
-The builder exposes the resolved feature set via `GARDENLINUX_*` keys written into `/etc/os-release` by the `base` feature. For the complete key table, see [Feature resolution in `/etc/os-release`](/reference/features#feature-resolution-in-etcos-release).
+The builder exposes the resolved feature set via `GARDENLINUX_*` keys written into `/etc/os-release` by the `base` feature. For the complete key table, see [Feature resolution in `/etc/os-release`](/reference/features/#feature-resolution-in-etcos-release).
 
 ## Further Reading
 

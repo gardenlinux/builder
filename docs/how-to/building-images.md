@@ -54,7 +54,7 @@ Run the build script with the flavor (`{cname}-{arch}`):
 
 Where:
 
-- `${platform}` — the target platform (e.g. `kvm`, `metal`, `aws`); must be the
+- `${platform}` — the target platform (e.g. [`kvm`](/reference/features/kvm), [`metal`](/reference/features/metal), [`aws`](/reference/features/aws)); must be the
   first component.
 - `${featureX}` — one or more features from the `features/` directory, separated
   by `-` (or `_` for features whose names begin with `_`).
@@ -107,7 +107,7 @@ apt install qemu-user-static
 
 ## Build Secureboot / Trustedboot / TPM2 Images
 
-Before building any image with the `_tpm2`, `_trustedboot`, or `_secureboot`
+Before building any image with the [`_tpm2`](/reference/features/_tpm2), [`_trustedboot`](/reference/features/_trustedboot), or [`_secureboot`](/reference/features/_secureboot)
 feature, generate the signing certificates:
 
 ```bash
