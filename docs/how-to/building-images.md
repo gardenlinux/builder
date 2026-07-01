@@ -46,7 +46,7 @@ pass the container engine. :::
 
 ## Build an Image
 
-Run the build script with the target flavor name:
+Run the build script with the flavor (`{cname}-{arch}`):
 
 ```bash
 ./build ${platform}-${feature1}-${feature2}-${arch}
@@ -71,7 +71,7 @@ Examples:
 For a full list of build script options, see the
 [Builder Command-Line Reference](/reference/builder).
 
-For help choosing a flavor name, see
+For help choosing a flavor, see
 [Choosing Flavors](/how-to/choosing-flavors).
 
 ## Run Parallel Builds

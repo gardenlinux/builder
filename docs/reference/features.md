@@ -17,6 +17,23 @@ github_target_path: docs/reference/features/index.md
 
 # Features
 
+For feature type definitions and composition semantics, see [Features](/explanation/features).
+
+## Feature resolution in `/etc/os-release`
+
+After resolving the feature graph, the builder writes the following keys into `/etc/os-release` via `features/base/exec.config` (defined in [ADR 0034](/reference/adr/0034-feature-terminology)):
+
+| Key | Content |
+|---|---|
+| `GARDENLINUX_CNAME` | The cname — feature encoding only (e.g. `aws-gardener_prod`) |
+| `GARDENLINUX_PLATFORM` | The single authoritative platform identifier (e.g. `aws`); set to `frankenstein` when multiple platform features are present |
+| `GARDENLINUX_FEATURES` | Comma-separated list of all features in the resolved feature set |
+| `GARDENLINUX_FEATURES_PLATFORMS` | Comma-separated list of all features of type `platform` |
+| `GARDENLINUX_FEATURES_ELEMENTS` | Comma-separated list of all features of type `element` |
+| `GARDENLINUX_FEATURES_FLAGS` | Comma-separated list of all features of type `flag` |
+
+`GARDENLINUX_PLATFORM` is always a single token and is the value to use for all platform-routing decisions (publishing, testing, image naming). `GARDENLINUX_FEATURES_PLATFORMS` is informational only and must not be used for routing.
+
 Each feature must contain an `info.yaml` file that adheres to the following structure:
 
 ## `info.yaml` file structure:
