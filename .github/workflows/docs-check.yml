@@ -62,7 +62,7 @@ jobs:
               repo: 'docs-ng',
               event_type: 'docs-pr',
               client_payload: {
-                repo: 'gardenlinux',
+                repo: '${{ github.event.repository.name }}',
                 pr_number: `${context.payload.pull_request.number}`,
                 commit_sha: isMergedPR
                   ? context.payload.pull_request.merge_commit_sha
