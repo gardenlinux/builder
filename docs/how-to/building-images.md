@@ -59,7 +59,16 @@ Where:
 - `${featureX}` — one or more features from the `features/` directory, separated
   by `-` (or `_` for features whose names begin with `_`).
 - `${arch}` — optional target architecture (`amd64` or `arm64`); must be the
-  last component.
+  last component. Defaults to the host architecture when omitted.
+
+:::info Partial arguments are accepted
+You can pass any subset of the full [naming hierarchy](/reference/flavors#canonical-names):
+a bare cname (e.g. `aws-gardener_prod`), a flavor (cname + arch, e.g.
+`aws-gardener_prod-amd64`), or a versioned flavor (flavor + version, e.g.
+`aws-gardener_prod-amd64-1877.3`). Any missing component is resolved
+automatically: architecture defaults to the host architecture, and version is
+read from the `VERSION` file via `./get_version`.
+:::
 
 Examples:
 

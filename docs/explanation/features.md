@@ -60,10 +60,10 @@ A complete list of features can be seen in the [Features Reference](/reference/f
 
 When you specify features for a build, the builder resolves the complete feature set by following the DAG:
 
-1. Start with the explicitly requested features
-2. Recursively include all features listed in each feature's `features.include` list
-3. Remove any features listed in `features.exclude` lists (but only if they were transitively included)
-4. Validate that the result forms a valid DAG (no cycles, no conflicts)
+1. Validate that all available features form a valid DAG (no cycles) — this check runs on the full, unfiltered feature graph before any resolution begins
+2. Start with the explicitly requested features
+3. Recursively include all features listed in each feature's `features.include` list
+4. Remove any features listed in `features.exclude` lists (but only if they were transitively included); attempting to exclude a feature that was explicitly requested is a hard build error
 
 For example, if you request [`aws`](/reference/features/aws) and [`gardener`](/reference/features/gardener):
 

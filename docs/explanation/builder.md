@@ -49,17 +49,16 @@ The build system is designed around three principles:
 
 ## Versioned Flavors as Build Inputs
 
-The `./build` script takes a **flavor** (`{cname}-{arch}`) as its argument. The version is not supplied on the command line — it is derived automatically by calling `./get_version`, which reads the `VERSION` file in the repository root:
+The `./build` script accepts a **cname** (`{cname}`), a **flavor** (`{cname}-{arch}`), or a **versioned flavor** (`{cname}-{arch}-{version}`) as its argument.
+
+When no version is included in the argument, it is derived automatically by calling `./get_version`, which reads the `VERSION` file in the repository root:
 
 - On `main`, `VERSION` contains `today`, so the literal string `today` is used as the version.
 - On a release branch, `VERSION` contains the full semver for that branch (e.g. `2150.5.0`), and `get_version` returns it as-is.
 
-The resolved version is passed to `make` as `DEFAULT_VERSION` and combined with the flavor to form the **versioned flavor** (`{cname}-{arch}-{version}`) used internally:
+When a version is explicitly provided on the command line (e.g. `./build aws-amd64-2142.0.0`), that version is used directly. The builder fetches the matching versioned container image while using the source code from the currently checked-out commit.
 
-```
-./build {cname}-{arch}
-# internally: make … DEFAULT_VERSION=<value> {cname}-{arch}-<value>
-```
+The resolved version is passed to `make` as `DEFAULT_VERSION` and combined with the flavor to form the **versioned flavor** (`{cname}-{arch}-{version}`) used internally.
 
 For example, `./build aws-gardener_prod-amd64` on `main` produces artifacts prefixed `aws-gardener_prod-amd64-today-<short_commit>`.
 
