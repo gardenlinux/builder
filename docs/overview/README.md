@@ -19,13 +19,13 @@ github_target_path: "docs/reference/supporting_tools/builder.md"
 
 ## Overview
 
-The Builder is a powerful tool for effortlessly building Linux system images based on config directories. It serves as the primary build tooling for the [gardenlinux](https://github.com/gardenlinux/gardenlinux) project.
+The Builder builds Linux system images based on config directories. It serves as the primary build tooling for the [gardenlinux](https://github.com/gardenlinux/gardenlinux) project.
 
 By default, the Builder runs inside rootless Podman, enabling building without requiring elevated permissions.
 
 ## Requirements
 
-The Builder has minimal dependencies and only requires a working container engine. We recommend using rootless Podman. Please refer to the [Podman rootless setup guide](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md) for instructions on setting it up.
+The Builder has minimal dependencies and only requires a working container engine. We recommend using rootless Podman. Refer to the [Podman rootless setup guide](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md) for instructions on setting it up.
 
 ## Usage
 
@@ -67,7 +67,7 @@ For a quick start guide on setting up your own config directory with your own fe
 
 ### Example Config Directory
 
-If you're new to configuring the Builder, you can find a minimal example config directory at [gardenlinux/builder_example](https://github.com/gardenlinux/builder_example). For a more comprehensive example, refer to the main [gardenlinux](https://github.com/gardenlinux/gardenlinux) repository.
+If you're new to configuring the Builder, you can find a minimal example config directory at [gardenlinux/builder_example](https://github.com/gardenlinux/builder_example). For a more complete example, refer to the main [gardenlinux](https://github.com/gardenlinux/gardenlinux) repository.
 
 Feel free to explore these examples to gain a better understanding of how to effectively structure your own config directory.
 
