@@ -231,8 +231,6 @@ index 181a646..9e4261e 100644
 
 Commit and push your changes and GitHub will build the image for you.
 
-You have successfully created your first feature with the Builder and set up a CI pipeline to build the image.
-
 ## Related Topics
 
 <RelatedTopics />
