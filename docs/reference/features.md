@@ -109,7 +109,7 @@ The format is:
   - `final_partition`: ensure this partition is placed at the end of the partition table regardless of default sorting. if you don't know why you'd need this you likely shouldn't use it!
 
 The `fstab` can be defined with an equally named file in one and only one feature.
-Additionally, other features can apply modifications to this base `fstab`.
+Other features can apply modifications to this base `fstab`.
 For this features can define executable `fstab.mod` scripts.
 These scripts are executed in the same order as regular config scripts, each receiving the output of the previous script as its input.
 The first script in the series receives the init `fstab` file.
@@ -121,7 +121,7 @@ The output of the final file will be used as the effective `fstab`.
 
 ## `image`, `image.<ext>`, `convert.<ext>`, `convert.<extA>~<extB>`
 
-Alternative, or additionally, to the `fstab` mechanism the builder also offers more fine grained control over image creation via explicit image create and convert scripts.
+As an alternative to the `fstab` mechanism, the builder also offers more fine grained control over image creation via explicit image create and convert scripts.
 
 The `image` and `image.<ext>` scripts are used to directly create an image given a rootfs tar.
 They get a path to the rootfs tar as `argv[1]` and a path where the target image should be written as `argv[2]`.
