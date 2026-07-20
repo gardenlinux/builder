@@ -4,30 +4,38 @@ set -euo pipefail
 
 features_dir="${FEATURES_DIR:-/builder/features}"
 
-# Scan all requirements.mod files to find all possible modifiers and set defaults
+# Built-in keys. requirements.mod scripts may extend this array via:
+#   requirements_keys+=(mykey)
+#   mykey=true
+requirements_keys=(arch)
+export arch="$BUILDER_ARCH"
+
+# Pass 1: source every requirements.mod to discover all keys any feature
+# may contribute, then reset discovered keys to "false" as defaults.
+# This ensures output keys are stable regardless of which features are selected.
 for req_mod in "$features_dir"/*/requirements.mod; do
 	[ -e "$req_mod" ] || continue
-	while IFS='=' read -r key _; do
-		[[ $key =~ ^[a-z_][a-z0-9_]*$ ]] && declare "$key=false"
-	done < <(grep -E '^[a-z_][a-z0-9_]*=' "$req_mod")
+	# shellcheck source=/dev/null
+	source "$req_mod"
 done
 
-# Source requirements.mod files for selected features to override defaults
+# Reset all discovered (non-arch) keys to false as defaults for pass 2.
+for key in "${requirements_keys[@]}"; do
+	[ "$key" = arch ] && continue
+	declare "$key=false"
+done
+
+# Pass 2: source only the selected features' requirements.mod files,
+# allowing them to override the defaults set above.
 IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
 for feature in "${features[@]}"; do
 	[ -z "$feature" ] && continue
-	req_file="$features_dir/$feature/requirements.mod"
+	req_mod="$features_dir/$feature/requirements.mod"
 	# shellcheck source=/dev/null
-	[ -e "$req_file" ] && source "$req_file"
+	[ -e "$req_mod" ] && source "$req_mod"
 done
 
-# Output all modifiers
-{
-	echo "arch=$BUILDER_ARCH"
-	for req_mod in "$features_dir"/*/requirements.mod; do
-		[ -e "$req_mod" ] || continue
-		while IFS='=' read -r key _; do
-			[[ $key =~ ^[a-z_][a-z0-9_]*$ ]] && echo "$key=${!key}"
-		done < <(grep -E '^[a-z_][a-z0-9_]*=' "$req_mod")
-	done | sort -u
-} > "$2"
+# Emit each key alphabetically (duplicates silently dropped by sort -u).
+for key in "${requirements_keys[@]}"; do
+	printf '%s=%s\n' "$key" "${!key}"
+done | sort -u -t= -k1,1 > "$2"

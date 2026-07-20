@@ -12,17 +12,27 @@ delegates all internal build steps to it. As a result, the only hard dependency
 on the host system is a working container engine — no specific Linux
 distribution, compiler toolchain, or package set is required on the build host.
 
+If you want to use a modified builder docker image, you can edit your changes into the `Dockerfile` and run the image build with
+```
+cd gardenlinux
+./build --container-image localhost/builder aws-gardener_prod
+```
+
+## SBOM Generation
+
+After image build time a Software Bill of Materials (SBOM) is created in CycloneDX JSON-format. To produce the SBOM a tool called `syft` is downloaded during build container time. To verify the integrity the offloaded checksums file is included in the builder's directory. To update to a newer syft-release update the container ARG in the `Dockerfile` and update the checksums-file for this release as well.
+
 ## Documentation
 
 For
-[explanations](https://gardenlinux-docs.netlify.app/explanation/builder.html) on
+[explanations](https://docs.gardenlinux.org/explanation/builder.html) on
 the structure of our build system,
-[references](https://gardenlinux-docs.netlify.app/reference/builder.html) of
+[references](https://docs.gardenlinux.org/reference/builder.html) of
 builder's CLI interface and detailed
-[how-to guides](https://gardenlinux-docs.netlify.app/how-to/building-images.html)
+[how-to guides](https://docs.gardenlinux.org/how-to/building-images.html)
 on how to build images for different
-[flavors](https://gardenlinux-docs.netlify.app/explanation/flavors.html), visit
-our [documentation](https://gardenlinux-docs.netlify.app/).
+[flavors](https://docs.gardenlinux.org/explanation/flavors.html), visit
+our [documentation](https://docs.gardenlinux.org/).
 
 # Community
 
