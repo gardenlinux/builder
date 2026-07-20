@@ -46,7 +46,7 @@ pass the container engine. :::
 
 ## Build an Image
 
-Run the build script with the target flavor name:
+Run the build script with the flavor (`{cname}-{arch}`):
 
 ```bash
 ./build ${platform}-${feature1}-${feature2}-${arch}
@@ -54,12 +54,21 @@ Run the build script with the target flavor name:
 
 Where:
 
-- `${platform}` — the target platform (e.g. `kvm`, `metal`, `aws`); must be the
+- `${platform}` — the target platform (e.g. [`kvm`](/reference/features/kvm), [`metal`](/reference/features/metal), [`aws`](/reference/features/aws)); must be the
   first component.
 - `${featureX}` — one or more features from the `features/` directory, separated
   by `-` (or `_` for features whose names begin with `_`).
 - `${arch}` — optional target architecture (`amd64` or `arm64`); must be the
-  last component.
+  last component. Defaults to the host architecture when omitted.
+
+:::info Partial arguments are accepted
+You can pass any subset of the full [naming hierarchy](/reference/flavors#canonical-names):
+a bare cname (e.g. `aws-gardener_prod`), a flavor (cname + arch, e.g.
+`aws-gardener_prod-amd64`), or a versioned flavor (flavor + version, e.g.
+`aws-gardener_prod-amd64-1877.3`). Any missing component is resolved
+automatically: architecture defaults to the host architecture, and version is
+read from the `VERSION` file via `./get_version`.
+:::
 
 Examples:
 
@@ -71,7 +80,7 @@ Examples:
 For a full list of build script options, see the
 [Builder Command-Line Reference](/reference/builder).
 
-For help choosing a flavor name, see
+For help choosing a flavor, see
 [Choosing Flavors](/how-to/choosing-flavors).
 
 ## Run Parallel Builds
@@ -107,7 +116,7 @@ apt install qemu-user-static
 
 ## Build Secureboot / Trustedboot / TPM2 Images
 
-Before building any image with the `_tpm2`, `_trustedboot`, or `_secureboot`
+Before building any image with the [`_tpm2`](/reference/features/_tpm2), [`_trustedboot`](/reference/features/_trustedboot), or [`_secureboot`](/reference/features/_secureboot)
 feature, generate the signing certificates:
 
 ```bash

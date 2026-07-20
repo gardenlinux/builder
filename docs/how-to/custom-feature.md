@@ -82,9 +82,9 @@ Garden Linux requires exactly one platform feature per build. Running `./build b
 
 Garden Linux features follow the same structure as vanilla builder features, but use three types:
 
-- **`platform`** — target platform such as `kvm`, `aws`, `azure`, `metal`, `gcp`. Rarely created by users.
-- **`element`** — significant feature that may include/exclude other features, e.g., `server`, `cloud`, `cis`, `fedramp`.
-- **`flag`** — minor toggles, conventionally prefixed with `_`, e.g., `_prod`, `_slim`, `_selinux`.
+- **`platform`** — target platform such as [`kvm`](/reference/features/kvm), [`aws`](/reference/features/aws), [`azure`](/reference/features/azure), [`metal`](/reference/features/metal), [`gcp`](/reference/features/gcp). Rarely created by users.
+- **`element`** — significant feature that may include/exclude other features, e.g., [`server`](/reference/features/server), [`cloud`](/reference/features/cloud), [`cis`](/reference/features/cis), [`fedramp`](/reference/features/fedramp).
+- **`flag`** — minor toggles, conventionally prefixed with `_`, e.g., [`_prod`](/reference/features/_prod), [`_slim`](/reference/features/_slim), [`_selinux`](/reference/features/_selinux).
 
 ### Customizing the image
 

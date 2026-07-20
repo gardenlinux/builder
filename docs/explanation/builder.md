@@ -40,28 +40,29 @@ The build system is designed around three principles:
 
 - **Minimal host dependencies** — The build runs entirely inside a container. Apart from the
   container engine itself, the host needs no build tools.
-- **Composability** — Images are assembled from reusable [features](/explanation/flavors#feature-based-design)
+- **Composability** — Images are assembled from reusable [features](/explanation/features#feature-types)
   rather than hand-crafted for each target. The same feature definition is reused across all
   platforms that include it.
 - **Reproducibility** — The builder container is versioned and pinned, so a given combination
   of source code and feature set should produce the same image regardless of when or where it
   is built.
 
-## Flavor Names as Build Inputs
+## Versioned Flavors as Build Inputs
 
-The build command takes a *flavor name* as its argument. A flavor name directly encodes what
-will be built:
+The `./build` script accepts a **cname** (`{cname}`), a **flavor** (`{cname}-{arch}`), or a **versioned flavor** (`{cname}-{arch}-{version}`) as its argument.
 
-```
-<platform>-<feature1>-<feature2>_<feature3>-<arch>
-```
+When no version is included in the argument, it is derived automatically by calling `./get_version`, which reads the `VERSION` file in the repository root:
 
-For example, `aws-gardener_prod-amd64` tells the builder to produce an AWS image (`aws`) with
-the [`gardener`](/reference/features/gardener) and [`_prod`](/reference/features/_prod) features for the `amd64` architecture. The build script parses this
-name and assembles the image by combining the specified platform and features.
+- On `main`, `VERSION` contains `today`, so the literal string `today` is used as the version.
+- On a release branch, `VERSION` contains the full semver for that branch (e.g. `2150.5.0`), and `get_version` returns it as-is.
 
-For a full explanation of how flavors and features compose, including the [CNAME system](/explanation/flavors#the-cname-system) and how
-features are joined, see [Flavors](/explanation/flavors).
+When a version is explicitly provided on the command line (e.g. `./build aws-amd64-2142.0.0`), that version is used directly. The builder fetches the matching versioned container image while using the source code from the currently checked-out commit.
+
+The resolved version is passed to `make` as `DEFAULT_VERSION` and combined with the flavor to form the **versioned flavor** (`{cname}-{arch}-{version}`) used internally.
+
+For example, `./build aws-gardener_prod-amd64` on `main` produces artifacts prefixed `aws-gardener_prod-amd64-today-<short_commit>`.
+
+The four-level naming hierarchy — cname, flavor, versioned flavor, and artifact base name — is defined in [ADR 0035](/reference/adr/0035-cname-flavor-artifact-naming). For a full explanation of how features and feature types compose, see [Flavors](/explanation/flavors) and [Features](/explanation/features). For the canonical names specification, see [Flavors Reference](/reference/flavors#canonical-names).
 
 ## Cross-Architecture Builds
 
