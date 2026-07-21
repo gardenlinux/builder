@@ -10,10 +10,6 @@ related_topics:
   - /how-to/secure-boot
   - /how-to/choosing-flavors
   - /how-to/getting-images
-migration_status: "done"
-migration_issue: "https://github.com/gardenlinux/gardenlinux/issues/4627"
-migration_stakeholder: "@tmang0ld, @yeoldegrove, @ByteOtter"
-migration_approved: false
 github_org: gardenlinux
 github_repo: builder
 github_source_path: docs/reference/builder.md
