@@ -5,10 +5,6 @@ related_topics:
   - /reference/supporting_tools/builder.md
   - /reference/features/
   - /how-to/custom-feature
-migration_status: "adapt"
-migration_issue: "https://github.com/gardenlinux/gardenlinux/issues/4600"
-migration_stakeholder: "@tmangold, @yeoldegrove, @ByteOtter"
-migration_approved: false
 github_org: gardenlinux
 github_repo: builder
 github_source_path: docs/reference/features.md

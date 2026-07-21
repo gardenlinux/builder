@@ -8,10 +8,6 @@ related_topics:
   - /reference/features/
   - /reference/adr/0034-feature-terminology.md
   - /reference/adr/0020-enforce-single-platform-by-default-in-builder.md
-migration_status: "done"
-migration_issue: "https://github.com/gardenlinux/gardenlinux/issues/4600"
-migration_stakeholder: "@tmangold, @yeoldegrove, @ByteOtter"
-migration_approved: false
 github_org: gardenlinux
 github_repo: builder
 github_source_path: docs/explanation/features.md
