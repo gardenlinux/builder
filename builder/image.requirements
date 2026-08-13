@@ -5,27 +5,18 @@ set -euo pipefail
 features_dir="${FEATURES_DIR:-/builder/features}"
 
 # Built-in keys. requirements.mod scripts may extend this array via:
-#   requirements_keys+=(mykey)
-#   mykey=true
-requirements_keys=(arch)
-export arch="$BUILDER_ARCH"
+#   requirements["some_key"]=some_value
+# and requirements.defs can set defaults to apply before any feature
+# specific values are set. this is also the place to define keys that
+# should exists with blank/default values even if no feature sets it
+declare -A requirements
+requirements["arch"]="$BUILDER_ARCH"
 
-# Pass 1: source every requirements.mod to discover all keys any feature
-# may contribute, then reset discovered keys to "false" as defaults.
-# This ensures output keys are stable regardless of which features are selected.
-for req_mod in "$features_dir"/*/requirements.mod; do
-	[ -e "$req_mod" ] || continue
-	# shellcheck source=/dev/null
-	source "$req_mod"
-done
+req_def=/builder/requirements.defs
+# shellcheck source=/dev/null
+[ -e "$req_def" ] && source "$req_def"
 
-# Reset all discovered (non-arch) keys to false as defaults for pass 2.
-for key in "${requirements_keys[@]}"; do
-	[ "$key" = arch ] && continue
-	declare "$key=false"
-done
-
-# Pass 2: source only the selected features' requirements.mod files,
+# Source only the selected features' requirements.mod files,
 # allowing them to override the defaults set above.
 IFS=',' read -r -a features <<< "$BUILDER_FEATURES"
 for feature in "${features[@]}"; do
@@ -35,7 +26,7 @@ for feature in "${features[@]}"; do
 	[ -e "$req_mod" ] && source "$req_mod"
 done
 
-# Emit each key alphabetically (duplicates silently dropped by sort -u).
-for key in "${requirements_keys[@]}"; do
-	printf '%s=%s\n' "$key" "${!key}"
-done | sort -u -t= -k1,1 > "$2"
+# Emit each key alphabetically
+for key in "${!requirements[@]}"; do
+	printf '%s=%s\n' "$key" "${requirements[$key]}"
+done | sort > "$2"
