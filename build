@@ -83,6 +83,7 @@ container_mount_opts=(
 
 # mount all features to enable dynamic discovery of requirements.mod files
 container_mount_opts+=(-v "$(realpath -- "features"):/builder/features:ro")
+container_mount_opts+=(-v "$(realpath -- "requirements.defs"):/builder/requirements.defs:ro")
 
 if [ "$container_image" = localhost/builder ]; then
 	dir="$(dirname -- "$(realpath -- "${BASH_SOURCE[0]}")")"

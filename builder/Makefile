@@ -57,7 +57,9 @@ clean:
 	features_platforms="$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$*' platforms)"
 	features_elements="$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$*' elements)"
 	features_flags="$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$*' flags)"
+	cname_base="$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$*' cname_base)"
 	BUILDER_CNAME='$*'
+	BUILDER_CNAME_BASE="$$cname_base"
 	BUILDER_VERSION='$(call cname_version,$*)'
 	BUILDER_ARCH='$(call cname_arch,$*)'
 	BUILDER_TIMESTAMP='$(TIMESTAMP)'
@@ -66,7 +68,7 @@ clean:
 	BUILDER_FEATURES_PLATFORMS="$$features_platforms"
 	BUILDER_FEATURES_ELEMENTS="$$features_elements"
 	BUILDER_FEATURES_FLAGS="$$features_flags"
-	export BUILDER_CNAME BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES BUILDER_FEATURES_PLATFORMS BUILDER_FEATURES_ELEMENTS BUILDER_FEATURES_FLAGS
+	export BUILDER_CNAME BUILDER_CNAME_BASE BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES BUILDER_FEATURES_PLATFORMS BUILDER_FEATURES_ELEMENTS BUILDER_FEATURES_FLAGS
 	./configure '$(word 1,$^)' '$@'
 
 define artifact_template =
@@ -79,7 +81,9 @@ define artifact_template =
 	features_platforms="$$$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$$*' platforms)"
 	features_elements="$$$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$$*' elements)"
 	features_flags="$$$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$$*' flags)"
+	cname_base="$$$$(./parse_features $(PARSE_FEATURES_ARGS) --feature-dir features --cname '$$*' cname_base)"
 	BUILDER_CNAME='$$*'
+	BUILDER_CNAME_BASE="$$$$cname_base"
 	BUILDER_VERSION='$$(call cname_version,$$*)'
 	BUILDER_ARCH='$$(call cname_arch,$$*)'
 	BUILDER_TIMESTAMP='$$(TIMESTAMP)'
@@ -88,7 +92,7 @@ define artifact_template =
 	BUILDER_FEATURES_PLATFORMS="$$$$features_platforms"
 	BUILDER_FEATURES_ELEMENTS="$$$$features_elements"
 	BUILDER_FEATURES_FLAGS="$$$$features_flags"
-	export BUILDER_CNAME BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES BUILDER_FEATURES_PLATFORMS BUILDER_FEATURES_ELEMENTS BUILDER_FEATURES_FLAGS
+	export BUILDER_CNAME BUILDER_CNAME_BASE BUILDER_VERSION BUILDER_ARCH BUILDER_TIMESTAMP BUILDER_COMMIT BUILDER_FEATURES BUILDER_FEATURES_PLATFORMS BUILDER_FEATURES_ELEMENTS BUILDER_FEATURES_FLAGS
 	"./$$$$script" "$$$$input" '$$@'
 endef
 
