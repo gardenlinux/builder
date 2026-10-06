@@ -1,5 +1,5 @@
-catalogers:
-  - dpkg-db-cataloger
+select-catalogers:
+  - "+sbom-cataloger"
 
 format:
   cyclonedx-json:
