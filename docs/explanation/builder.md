@@ -77,8 +77,8 @@ instruction goes through QEMU emulation.
 
 ## Certificates for Secure Boot and Trusted Boot
 
-Images that use the [`_trustedboot`](/reference/features/_trustedboot),
-[`_tpm2`](/reference/features/_tpm2), or [`_secureboot`](/reference/features/_secureboot)
+Images that use the [`_trustedboot`](/reference/features/_trustedboot) or
+[`_tpm2`](/reference/features/_tpm2)
 features must be signed with a custom certificate chain. This is because UEFI Secure Boot
 validates the bootloader and kernel against enrolled certificates before execution — without
 a valid signature, the firmware refuses to boot the image.

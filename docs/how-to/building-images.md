@@ -112,7 +112,7 @@ apt install qemu-user-static
 
 ## Build Secureboot / Trustedboot / TPM2 Images
 
-Before building any image with the [`_tpm2`](/reference/features/_tpm2), [`_trustedboot`](/reference/features/_trustedboot), or [`_secureboot`](/reference/features/_secureboot)
+Before building any image with the [`_tpm2`](/reference/features/_tpm2) or [`_trustedboot`](/reference/features/_trustedboot)
 feature, generate the signing certificates:
 
 ```bash

@@ -125,8 +125,8 @@ container is launched. It can override build variables that are otherwise set to
 ## `./cert/build`
 
 The `./cert/build` script generates the Secure Boot certificate chain required for
-[`_trustedboot`](/reference/features/_trustedboot), [`_tpm2`](/reference/features/_tpm2),
-and [`_secureboot`](/reference/features/_secureboot) images.
+[`_trustedboot`](/reference/features/_trustedboot) and [`_tpm2`](/reference/features/_tpm2),
+images.
 
 ### Synopsis
 
