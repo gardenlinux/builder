@@ -8,6 +8,7 @@ related_topics:
   - /reference/features/
   - /reference/adr/0034-feature-terminology.md
   - /reference/adr/0020-enforce-single-platform-by-default-in-builder.md
+  - /contributing/documentation/features
 github_org: gardenlinux
 github_repo: builder
 github_source_path: docs/explanation/features.md
@@ -18,7 +19,7 @@ github_target_path: docs/explanation/features.md
 
 ## What Is a Feature?
 
-A **feature** is the atomic building block of a Garden Linux image. Each feature is a named directory inside the `features/` tree of the Garden Linux repository containing at minimum an `info.yaml` file that declares its type and dependencies.
+A **feature** is the atomic building block of a Garden Linux image. Each feature is a named directory inside the `features/` tree of the Garden Linux repository containing at minimum an `info.yaml` file that declares its type and dependencies and a [`README.md` that explains the feature](/contributing/documentation/features).
 
 Features are not independent. They form a **directed acyclic graph (DAG)** where each feature may declare:
 

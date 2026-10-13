@@ -5,6 +5,7 @@ related_topics:
   - /reference/supporting_tools/builder.md
   - /reference/features/
   - /how-to/custom-feature
+  - /contributing/documentation/features
 github_org: gardenlinux
 github_repo: builder
 github_source_path: docs/how-to/custom-feature.md
@@ -228,6 +229,22 @@ index 181a646..9e4261e 100644
 Commit and push your changes and GitHub will build the image for you.
 
 You have successfully created your first feature with the Builder and set up a CI pipeline to build the image.
+
+## Document your feature
+
+Every feature in Garden Linux must have a `README.md` that describes what it does,
+which files it provides, and how it relates to other features. For Garden Linux
+features, follow the [feature README authoring standard](/contributing/documentation/features).
+
+Run the scaffold helper to generate the `### Files` table and `### Related features`
+skeleton for your feature:
+
+```bash
+bin/gl-feature-readme-scaffold features/<name>
+```
+
+The script reads `info.yaml`, lists all files in the feature directory, and prints a
+ready-to-paste markdown table pre-linked to the [feature file reference](/reference/features/).
 
 ## Related Topics
 
