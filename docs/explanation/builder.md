@@ -16,6 +16,7 @@ github_source_path: docs/explanation/builder.md
 github_target_path: docs/explanation/builder.md
 ---
 
+
 # How the Build System Works
 
 ## The Builder
@@ -58,7 +59,7 @@ The resolved version is passed to `make` as `DEFAULT_VERSION` and combined with 
 
 For example, `./build aws-gardener_prod-amd64` on `main` produces artifacts prefixed `aws-gardener_prod-amd64-today-<short_commit>`.
 
-The four-level naming hierarchy — cname, flavor, versioned flavor, and artifact base name — is defined in [ADR 0035](/reference/adr/0035-cname-flavor-artifact-naming). For a full explanation of how features and feature types compose, see [Flavors](/explanation/flavors) and [Features](/explanation/features). For the canonical names specification, see [Flavors Reference](/reference/flavors#canonical-names).
+The four-level naming hierarchy — cname, flavor, versioned flavor, and artifact base name — is defined in [ADR 0035](/reference/adr/0035-cname-flavor-artifact-naming). For a full explanation of how features and feature types compose, see [Flavors](/explanation/flavors) and [Features](/explanation/features). For the canonical names specification, see [Flavors Reference](/reference/flavors#feature-list).
 
 ## Cross-Architecture Builds
 

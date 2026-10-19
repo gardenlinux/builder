@@ -58,7 +58,7 @@ Where:
   last component. Defaults to the host architecture when omitted.
 
 :::info Partial arguments are accepted
-You can pass any subset of the full [naming hierarchy](/reference/flavors#canonical-names):
+You can pass any subset of the full [naming hierarchy](/reference/flavors#feature-list):
 a bare cname (e.g. `aws-gardener_prod`), a flavor (cname + arch, e.g.
 `aws-gardener_prod-amd64`), or a versioned flavor (flavor + version, e.g.
 `aws-gardener_prod-amd64-1877.3`). Any missing component is resolved
@@ -110,7 +110,7 @@ apt install qemu-user-static
 
 :::
 
-## Build Secureboot / Trustedboot / TPM2 Images
+## Build Secureboot, Trustedboot and TPM2 Images
 
 Before building any image with the [`_tpm2`](/reference/features/_tpm2) or [`_trustedboot`](/reference/features/_trustedboot)
 feature, generate the signing certificates:
