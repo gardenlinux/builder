@@ -13,7 +13,7 @@ runs:
         sudo apt-get update
         if [ "${{ inputs.arch }}" = "amd64" ]; then
           sudo docker system prune -a -f
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends qemu-user-static
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends qemu-user-binfmt
         elif [ "${{ inputs.arch }}" = "arm64" ]; then
           sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends podman uidmap slirp4netns dbus-user-session
           id="$(id -u)"
