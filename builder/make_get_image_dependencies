@@ -8,7 +8,7 @@ exec 1>&2
 # get longest chain of extensions, but not extensions starting with a number to prevent parsing minor version as extension
 extension="$(grep -E -o '(\.[a-z][a-zA-Z0-9\-_]*)*$' <<< "$1")"
 artifact_base="${1%"-$COMMIT$extension"}"
-cname="$(basename "$artifact_base")"
+versioned_flavor="$(basename "$artifact_base")"
 
 [ "$extension" != ".raw" ] || extension=
 
@@ -26,7 +26,7 @@ if [ -f "convert$extension" ]; then
 	input="$artifact_base-$COMMIT.raw"
 fi
 
-IFS=',' read -r -a features < <(./parse_features --allow-frankenstein --feature-dir features --cname "$cname" features)
+IFS=',' read -r -a features < <(./parse_features --allow-frankenstein --feature-dir features --target "$versioned_flavor" features)
 
 for feature in "${features[@]}"; do
 	if [ -s "features/$feature/image$extension" ]; then

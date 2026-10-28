@@ -21,7 +21,6 @@ container_run_opts=(
 container_cmd=()
 
 use_kms=0
-resolve_cname=0
 allow_frankenstein=0
 apparmor_profile=
 
@@ -55,10 +54,6 @@ while [ $# -gt 0 ]; do
 		--print-container-image)
 			printf '%s\n' "$container_image" >&3
 			exit 0
-			;;
-		--resolve-cname)
-			resolve_cname=1
-			shift
 			;;
 		--target)
 			target_dir="$2"
@@ -95,14 +90,6 @@ commit="$(./get_commit)"
 timestamp="$(./get_timestamp)"
 default_version="$(./get_version)"
 
-
-if [ "$resolve_cname" = 1 ]; then
-	arch="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" dpkg --print-architecture)"
-	cname="$("$container_engine" run --rm "${container_run_opts[@]}" "${container_mount_opts[@]}" "$container_image" /builder/parse_features --feature-dir /builder/features --default-arch "$arch" --default-version "$default_version" --cname "$1")"
-	short_commit="$(head -c 8 <<< "$commit")"
-	echo "$cname-$short_commit" >&3
-	exit 0
-fi
 
 make_opts=(
 	REPO="$repo"
