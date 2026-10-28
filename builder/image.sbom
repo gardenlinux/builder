@@ -13,6 +13,7 @@ SYFT_CACHE_DIR="$chroot_dir"/syft-cache syft --quiet "$1" --config syft.yaml --o
   --arg cname "$BUILDER_CNAME" \
   --arg arch "$BUILDER_ARCH" \
   --arg version "$BUILDER_VERSION" \
+  --arg commit "$BUILDER_COMMIT" \
   --arg features "$BUILDER_FEATURES" \
   --arg builder_timestamp "$BUILDER_TIMESTAMP" \
   --arg cpe "" \
@@ -25,6 +26,8 @@ SYFT_CACHE_DIR="$chroot_dir"/syft-cache syft --quiet "$1" --config syft.yaml --o
     "properties": [
       {"name": "cname", "value": $cname},
       {"name": "arch", "value": $arch},
+      {"name": "version", "value": $version},
+      {"name": "commit", "value": $commit},
       {"name": "features", "value": $features},
       {"name": "build timestamp", "value": $builder_timestamp}
     ]

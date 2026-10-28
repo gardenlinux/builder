@@ -15,7 +15,7 @@ def main():
 	parser.add_argument("--feature-dir", default="features")
 	parser.add_argument("--features", type=lambda arg: set([f for f in arg.split(",") if f]))
 	parser.add_argument("--ignore", type=lambda arg: set([f for f in arg.split(",") if f]), default=set())
-	parser.add_argument("--cname")
+	parser.add_argument("--target")
 	parser.add_argument("--arch")
 	parser.add_argument("--version")
 	parser.add_argument("--default-arch")
@@ -24,7 +24,8 @@ def main():
 
 	args_type_allowed = [
 		"cname",
-		"cname_base",
+		"flavor",
+		"versioned_flavor",
 		"features",
 		"platforms",
 		"flags",
@@ -34,22 +35,26 @@ def main():
 		"graph"
 	]
 
-	parser.add_argument("type", nargs="?", choices=args_type_allowed, default="cname")
+	parser.add_argument("type", nargs="?", choices=args_type_allowed, default="versioned_flavor")
 	args = parser.parse_args()
 
-	assert bool(args.features) ^ bool(args.cname), "please provide either `--features` or `--cname` argument"
+	assert bool(args.features) ^ bool(args.target), "please provide either `--features` or `--target` argument"
 
 	arch = None
 	version = None
 
-	if args.cname:
-		search = re.search("^([a-z][a-zA-Z0-9_-]*?)(-(amd64|arm64)(-([a-z0-9.]+))?)?$", args.cname)
-		assert search, f"not a valid cname {args.cname}"
+	if args.target:
+		# the target is the raw string a dev passes to the builder, at any level
+		# of specificity (cname, flavor, or versioned flavor) and not necessarily
+		# in canonical order; the canonical cname/flavor/versioned flavor are
+		# derived from it below
+		search = re.search("^([a-z][a-zA-Z0-9_-]*?)(-(amd64|arm64)(-([a-z0-9.]+))?)?$", args.target)
+		assert search, f"not a valid target {args.target}"
 		matches = search.groups()
-		input_cname_base = matches[0]
+		input_cname = matches[0]
 		arch = matches[2]
 		version = matches[4]
-		input_features = reverse_cname_base(input_cname_base)
+		input_features = reverse_cname(input_cname)
 	else:
 		input_features = args.features
 
@@ -59,10 +64,10 @@ def main():
 	if args.version:
 		version = args.version
 
-	if not arch and (args.type == "cname" or args.type == "arch"):
+	if not arch and (args.type == "flavor" or args.type == "versioned_flavor" or args.type == "arch"):
 		assert args.default_arch, "architecture not specified and no default architecture set"
 		arch = args.default_arch
-	if not version and (args.type == "cname" or args.type == "version"):
+	if not version and (args.type == "versioned_flavor" or args.type == "version"):
 		assert args.default_version, "version not specified and no default version set"
 		version = args.default_version
 
@@ -98,13 +103,16 @@ def main():
 	sorted_features = sort_nodes(graph)
 	minimal_feature_set = get_minimal_feature_set(graph)
 	sorted_minimal_features = sort_set(minimal_feature_set, sorted_features)
-	cname_base = get_cname_base(sorted_minimal_features)
-	cname = f"{cname_base}-{arch}-{version}"
+	cname = get_cname(sorted_minimal_features)
+	flavor = f"{cname}-{arch}"
+	versioned_flavor = f"{cname}-{arch}-{version}"
 
-	if args.type == "cname_base":
-		print(cname_base)
-	elif args.type == "cname":
+	if args.type == "cname":
 		print(cname)
+	elif args.type == "flavor":
+		print(flavor)
+	elif args.type == "versioned_flavor":
+		print(versioned_flavor)
 	elif args.type == "features":
 		print(",".join(features))
 	elif args.type == "platforms":
@@ -114,9 +122,9 @@ def main():
 	elif args.type == "flags":
 		print(",".join(features_by_type["flag"]))
 	elif args.type == "graph":
-		print(graph_as_mermaid_markup(cname_base, graph))
+		print(graph_as_mermaid_markup(cname, graph))
 
-def graph_as_mermaid_markup(cname_base, graph):
+def graph_as_mermaid_markup(cname, graph):
 	"""
 	Generates a mermaid.js representation of the graph.
 	This is helpful to identify dependencies between features.
@@ -124,7 +132,7 @@ def graph_as_mermaid_markup(cname_base, graph):
 	Syntax docs:
 	https://mermaid.js.org/syntax/flowchart.html?id=flowcharts-basic-syntax
 	"""
-	markup = f"---\ntitle: Dependency Graph for Feature {cname_base}\n---\ngraph TD;\n"
+	markup = f"---\ntitle: Dependency Graph for Feature {cname}\n---\ngraph TD;\n"
 	for u,v in networkx.edges(graph):
 		markup += f"    {u}-->{v};\n"
 	return markup
@@ -139,11 +147,11 @@ def popen_read(command):
 	f.close()
 	return output
 
-def reverse_cname_base(cname):
+def reverse_cname(cname):
 	cname = cname.replace("_", "-_")
 	return set(cname.split("-"))
 
-def get_cname_base(sorted_features):
+def get_cname(sorted_features):
 	return reduce(lambda a, b : a + ("-" if not b.startswith("_") else "") + b, sorted_features)
 
 def get_minimal_feature_set(graph):

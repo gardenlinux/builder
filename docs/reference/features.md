@@ -28,9 +28,7 @@ After resolving the feature graph, the builder writes the following keys into `/
 | `GARDENLINUX_FEATURES_ELEMENTS`  | Comma-separated list of all features of type `element`                                                                       |
 | `GARDENLINUX_FEATURES_FLAGS`     | Comma-separated list of all features of type `flag`                                                                          |
 
-:::warning
-`GARDENLINUX_CNAME` currently contains the versioned flavor (`{cname}-{arch}-{version}`) because `BUILDER_CNAME` in the builder is set to the full make target. Once [builder#156](https://github.com/gardenlinux/builder/issues/156) and [gardenlinux#5004](https://github.com/gardenlinux/gardenlinux/issues/5004) are resolved, `BUILDER_CNAME` will be corrected to carry only the feature encoding (e.g. `aws-gardener_prod`), and `GARDENLINUX_CNAME` will follow.
-:::
+`GARDENLINUX_CNAME` contains the cname as defined in [ADR 0035](/reference/adr/0035-cname-flavor-artifact-naming) — the feature encoding only, without architecture, version, or commit. It is populated from the builder's `BUILDER_CNAME` variable.
 
 `GARDENLINUX_PLATFORM` is always a single token and is the value to use for all platform-routing decisions (publishing, testing, image naming). `GARDENLINUX_FEATURES_PLATFORMS` is informational only and must not be used for routing.
 
@@ -105,6 +103,23 @@ The order of execution is as follows:
 - `exec.post` (outside chroot)
 
 When building with multiple features, the execution steps of each feature are interleaved. For example, the `exec.config` step will run for all features before any features' `exec.late` step runs.
+
+The builder exports the following variables to feature scripts (naming per [ADR 0035](/reference/adr/0035-cname-flavor-artifact-naming)):
+
+| Variable                     | Value                                                            |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `BUILDER_CNAME`              | cname — feature encoding only (e.g. `aws-gardener_prod`)         |
+| `BUILDER_FLAVOR`             | flavor — `{cname}-{arch}`                                        |
+| `BUILDER_VERSIONED_FLAVOR`   | versioned flavor — `{cname}-{arch}-{version}`                    |
+| `BUILDER_ARTIFACT_BASE`      | artifact base name — `{cname}-{arch}-{version}-{short_commit}`   |
+| `BUILDER_ARCH`               | target architecture                                              |
+| `BUILDER_VERSION`            | version                                                          |
+| `BUILDER_COMMIT`             | full source commit hash                                          |
+| `BUILDER_TIMESTAMP`          | build timestamp (for reproducible builds)                        |
+| `BUILDER_FEATURES`           | comma-separated resolved feature set                             |
+| `BUILDER_FEATURES_PLATFORMS` | comma-separated features of type `platform`                      |
+| `BUILDER_FEATURES_ELEMENTS`  | comma-separated features of type `element`                       |
+| `BUILDER_FEATURES_FLAGS`     | comma-separated features of type `flag`                          |
 
 ## `fstab`, `fstab.mod`
 
