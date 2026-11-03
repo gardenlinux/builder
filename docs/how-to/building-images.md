@@ -119,8 +119,11 @@ feature, generate the signing certificates:
 ./cert/build
 ```
 
-:::tip Do not use the `Makefile` in `cert/` directly. Always use `./cert/build`.
-If `./cert/build` fails, try running `./cert/build clean` first. :::
+:::tip
+Do not use the `Makefile` in `cert/` directly. Always use `./cert/build`.
+If `./cert/build` fails, try running `./cert/build clean` first.
+
+:::
 
 By default, private keys are stored locally in the `cert/` directory. To use AWS
 Key Management Service instead, pass the `--kms` flag (valid AWS credentials
@@ -141,11 +144,6 @@ For conceptual background on these features, see
 [Boot Modes](/explanation/boot-modes) and
 [Secure Boot and Trusted Boot](/explanation/secure-boot). For cloud deployment
 steps, see [Deploying Secure Boot Images](/how-to/secure-boot).
-
-## Troubleshooting
-
-If you encounter build failures, refer to the
-[Garden Linux builder troubleshooting section](https://github.com/gardenlinux/builder#troubleshooting).
 
 ## Related Topics
 
