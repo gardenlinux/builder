@@ -24,9 +24,11 @@ conceptual background on how the build system works, see
 
 ## Prerequisites
 
-:::warning Provide at least **8 GiB of RAM** to the container runtime or the
+:::warning
+Provide at least **8 GiB of RAM** to the container runtime or the
 virtual machine hosting it (in Podman Desktop or Docker Desktop). The build may
-fail silently if memory is insufficient. :::
+fail silently if memory is insufficient.
+:::
 
 You need a working container engine. Three options are supported:
 
@@ -37,8 +39,10 @@ You need a working container engine. Three options are supported:
 - **Rooless Docker** - See the
   [Docker Rootless Mode Documentation](https://docs.docker.com/engine/security/rootless/)
 
-:::info See [Builder Command-Line Reference](/reference/builder#options) how to
-pass the container engine. :::
+:::info
+See [Builder Command-Line Reference](/reference/builder#options) how to
+pass the container engine.
+:::
 
 ## Build an Image
 
@@ -87,9 +91,11 @@ To build multiple targets simultaneously, use the `-j` flag:
 ./build -j 4 kvm-amd64 kvm-arm64 aws-gardener_prod-amd64 aws-gardener_prod-arm64
 ```
 
-:::warning Parallel builds multiply memory usage. Allow at least **8 GiB per
+:::warning Parallel builds multiply memory usage.
+Allow at least **8 GiB per
 thread**. There are no safeguards against memory exhaustion; builds may fail
-silently if memory runs out. :::
+silently if memory runs out.
+:::
 
 ## Build for a Different Architecture
 

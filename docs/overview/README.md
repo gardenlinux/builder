@@ -73,7 +73,7 @@ To test changes made to the builder locally you can simply create a symlink to t
 
 e.g.: if you have the gardenlinux and builder repos both inside the same parent directory and you want to work on the builder you would do the following:
 
-```
+```bash
 cd gardenlinux
 ln -f -s ../builder/build build
 ```

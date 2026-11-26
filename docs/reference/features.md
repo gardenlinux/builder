@@ -79,7 +79,7 @@ To override these defaults, refer to the `file.include.stat` option below.
 
 A file that specifies the owner and permissions for files copied by `file.include`. Each line should follow the format:
 
-```
+```text
 user group permissions file
 ```
 
@@ -126,7 +126,7 @@ The builder exports the following variables to feature scripts (naming per [ADR 
 The partition layout of the build image can be defined in an fstab like format.
 The format is:
 
-```
+```text
 <part identifier>    <mount point>    <fs type>    <mount options>    <advanced args>
 ```
 
@@ -147,9 +147,10 @@ These scripts are executed in the same order as regular config scripts, each rec
 The first script in the series receives the init `fstab` file.
 The output of the final file will be used as the effective `fstab`.
 
-> [!IMPORTANT]
-> This pipeline design implies that it is the responsibility of every `fstab.mod` script to re-echo any entry they do not want to modify.
-> Otherwise this is seen as the script dropping the entry.
+:::warning
+This pipeline design implies that it is the responsibility of every `fstab.mod` script to re-echo any entry they do not want to modify.
+Otherwise this is seen as the script dropping the entry.
+:::
 
 ## `image`, `image.<ext>`, `convert.<ext>`, `convert.<extA>~<extB>`
 

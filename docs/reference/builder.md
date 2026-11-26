@@ -26,7 +26,7 @@ background, see [Builder](/explanation/builder).
 
 ### Synopsis
 
-```
+```text
 ./build [OPTIONS] <flavor> [<flavor> ...]
 ```
 
@@ -58,7 +58,7 @@ container. The most commonly used `make` flag is:
 
 ### Flavor Syntax
 
-```
+```text
 <platform>[-<feature>...]-[<arch>]
 ```
 
@@ -125,7 +125,7 @@ images.
 
 ### Synopsis
 
-```
+```text
 ./cert/build [OPTIONS] [clean]
 ```
 
