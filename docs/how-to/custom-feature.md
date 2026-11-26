@@ -141,7 +141,7 @@ See the [features documentation](/reference/features/) for detailed information 
 
 3. Create a file named `pkg.include` inside `features/nginx` with the following content:
 
-```
+```text
 nginx
 ```
 
